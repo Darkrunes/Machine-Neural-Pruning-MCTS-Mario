@@ -1,0 +1,18 @@
+INPUT/OUTPUT
+1. Copy network code and add to agent
+2. Change network input into array form
+3. Implement movement over network (just move one direction)
+
+Search.
+1. Implement A*
+
+Behav
+1. Implement Get Gold
+2. Implement Get Go Home
+3. Implement Explore
+4. Implement Get Item
+
+Graph
+1. Implement Search
+2. Implement updating map based on new input
+
