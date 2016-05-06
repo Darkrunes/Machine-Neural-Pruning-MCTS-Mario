@@ -5,10 +5,11 @@ INPUT/OUTPUT
 
 Search.
 1. Implement A*
+2. Use Heuristic only for exploration
 
 Behav
 1. Implement Get Gold
-2. Implement Get Go Home
+2. Implement Go Home
 3. Implement Explore
 4. Implement Get Item
 
@@ -16,3 +17,6 @@ Graph
 1. Implement Search
 2. Implement updating map based on new input
 
+Agent
+1. Move validation
+2. 
