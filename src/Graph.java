@@ -193,4 +193,7 @@ public class Graph {
 		return null;
 	}
 	
+	public Tile getTileAt(int x, int y) {
+		return map[y][x];
+	}
 }
