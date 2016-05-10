@@ -77,6 +77,34 @@ public class Graph {
 	}
 	
 	/**
+	 * Returns true if the move the agent is going to make is valid (i.e. they are moving into a tile
+	 * which is either empty or contains an item)
+	 * @param currDirection The direction that the agent is going to move in
+	 * @return true if the next move forward is valid
+	 */
+	public boolean isValidMove(Direction currDirection) {
+		switch (currDirection) {
+		case NORTH:
+			if (Tile.isItem(map[currPos.y+1][currPos.x])) return true;
+			if (map[currPos.y+1][currPos.x] == Tile.Empty) return true;
+			break;
+		case SOUTH:
+			if (Tile.isItem(map[currPos.y-1][currPos.x])) return true;
+			if (map[currPos.y-1][currPos.x] == Tile.Empty) return true;
+			break;
+		case EAST:
+			if (Tile.isItem(map[currPos.y][currPos.x+1])) return true;
+			if (map[currPos.y][currPos.x+1] == Tile.Empty) return true;
+			break;
+		case WEST:
+			if (Tile.isItem(map[currPos.y][currPos.x-1])) return true;
+			if (map[currPos.y][currPos.x-1] == Tile.Empty) return true;
+			break;	
+		}
+		return false;
+	}
+	
+	/**
 	 * Updates the map using the first row of the 5x5 view that the agent has after it has moved forward
 	 * in one of the four directions. Also updates the player's current position on the map.
 	 * @param topTiles the first row of tiles that the agent sees in its 5x5 view

@@ -51,7 +51,9 @@ public class Agent {
 		// Update the map or change directions 
 		switch (lastAction) {
 		case 'f':
-			map.updateMap(view[0], currDirection);
+			if (map.isValidMove(currDirection)) { 
+				map.updateMap(view[0], currDirection);
+			}
 			break;
 		case 'l':
 		case 'r':
