@@ -1,7 +1,7 @@
 import java.awt.Point;
 import java.util.*;
 
-public class State {
+public class State implements Comparable<State>{
 	private State prevState;
 	private Direction currDirection;
 	private Point pos;
@@ -22,8 +22,8 @@ public class State {
 	 * @param map			The map
 	 * @param inventory		Current player inventory
 	 */
-	public void calculateHeuristic(Behaviour b, Graph map, ArrayList<Item> inventory) {
-		this.hCost = b.returnHeuristic(map, inventory);
+	public void calculateHeuristic(Behaviour b, Graph map, ArrayList<Item> inventory, Point goal) {
+		this.hCost = b.returnHeuristic(goal, pos);
 		Tile currTile = map.getTileAt(pos.x, pos.y);
 		int gCost = 0;
 		
@@ -44,5 +44,46 @@ public class State {
 		}	
 		
 		this.fCost = gCost + hCost;
+	}
+	
+	/**
+	 * Recursively builds a list of moves to get to the goal
+	 * @return		Queue of moves to reach the goal from the starting node
+	 */
+	public Queue<Move> getPath() {
+		Queue<Move> qm;
+		if (prevState == null) {
+			qm = new LinkedList<Move>();
+		} else {
+			qm = prevState.getPath();
+		}
+		Move m = new Move();
+		m.d = currDirection;
+		qm.add(m);
+
+		return qm;
+	}
+	
+	/**
+	 * Getter for the function cost of a state
+	 * @return		Integer function cost of state
+	 */
+	public int getFCost() {
+		return fCost;
+	}
+	
+	/**
+	 * Gets a Point object representing the current position in the state
+	 * @return		Point representing the current position
+	 */
+	public Point getPos() {
+		return pos;
+	}
+
+	@Override
+	public int compareTo(State o) {
+		if (o == this) return 0;
+		else if (o.getFCost() < getFCost()) return 1;
+		else return -1;
 	}
 }
