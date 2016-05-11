@@ -4,6 +4,7 @@ import java.util.*;
 public class Graph {
 	private Tile[][] map;
 	private ArrayList<Item> itemsOnMap;
+	private ArrayList<Item> playerInv;		// very hacky change later
 	private Point currPos;
 	private Point exploredLowBound;
 	private Point exploredHighBound;
@@ -11,6 +12,7 @@ public class Graph {
 	public Graph() {
 		map = new Tile[160][160];
 		itemsOnMap = new ArrayList<Item>();
+		playerInv = new ArrayList<Item>();
 		currPos = new Point(80, 80);
 		// Used to map which areas have been explored
 		exploredLowBound = new Point(80, 80);
@@ -181,16 +183,103 @@ public class Graph {
 		// Remove the item from the map if the player has picked it up
 		// TODO Account for case where stone is placed on water
 		if (Tile.isItem(map[currPos.y][currPos.x])) {
+			playerInv.add(new Item(map[currPos.y][currPos.x], 0, new Point(0,0)));
 			map[currPos.y][currPos.x] = Tile.Empty;
 		} 
 	}
 	
-	public ArrayList<Item> getItems() {
-		return null;
+	public Point getPlayerPos() {
+		return currPos;
 	}
 	
-	public Queue<Move> astar(Behaviour currBehaviour) {
-		return null;
+	public ArrayList<Item> getItems() {
+		// SUUUUPER hacky change later
+		return playerInv;
+	}
+	
+	public ArrayList<Item> itemsOnMap() {
+		// HACKY AS F REPLACE
+		return itemsOnMap;
+	}
+	
+	/**
+	 * Given the starting direction and a behavior which determines the goal and heuristic, 
+	 * this will return a queue of moves to the goal or null if none is present.
+	 * @param currBehaviour					The behavior of the agent, dictates the goal and heuristic
+	 * @param currDirection					The direction the player is currently facing
+	 * @return								A Queue of Move to the goal or null if no path available
+	 * @see Behaviour#returnHeuristic()
+	 * @see Behaviour#getGoal()
+	 */
+	public Queue<Move> astar(Behaviour currBehaviour, Direction currDirection) {
+		Point goal = currBehaviour.getGoal();
+		int iterations = 0;
+		Point currentNode;
+		State currState = new State(null, currDirection, this.currPos);
+		PriorityQueue<State> pq = new PriorityQueue<State>();
+		pq.add(currState);
+		
+		while (true) {
+			currState = pq.poll();
+			currentNode = currState.getPos();
+			if(currState.getPos().equals(goal)) break;
+			
+			switch(currDirection) {
+				case NORTH:
+					// Tile above
+					pq.add(new State(currState, currDirection, new Point(currentNode.x, currentNode.y + 1)));
+					// Tile below
+					pq.add(new State(currState, currDirection.changeDirection('r').changeDirection('r'),
+							new Point(currentNode.x, currentNode.y - 1)));
+					// Tile left
+					pq.add(new State(currState, currDirection.changeDirection('l'), new Point(currentNode.x - 1, currentNode.y)));
+					//Tile Right
+					pq.add(new State(currState, currDirection.changeDirection('r'), new Point(currentNode.x + 1, currentNode.y)));
+					break;
+					
+				case SOUTH:
+					// Tile above
+					pq.add(new State(currState, currDirection.changeDirection('r').changeDirection('r'),
+							new Point(currentNode.x, currentNode.y + 1)));
+					// Tile below
+					pq.add(new State(currState, currDirection, new Point(currentNode.x, currentNode.y - 1)));
+					// Tile left
+					pq.add(new State(currState, currDirection.changeDirection('r'), new Point(currentNode.x - 1, currentNode.y)));
+					//Tile Right
+					pq.add(new State(currState, currDirection.changeDirection('l'), new Point(currentNode.x + 1, currentNode.y)));
+					break;
+				case EAST:
+					// Tile above
+					pq.add(new State(currState, currDirection.changeDirection('l'), new Point(currentNode.x, currentNode.y + 1)));
+					// Tile below
+					pq.add(new State(currState, currDirection.changeDirection('r'),new Point(currentNode.x, currentNode.y - 1)));
+					// Tile left
+					pq.add(new State(currState, currDirection, new Point(currentNode.x - 1, currentNode.y)));
+					//Tile Right
+					pq.add(new State(currState, currDirection.changeDirection('r').changeDirection('r'),
+							new Point(currentNode.x + 1, currentNode.y)));
+					break;
+				case WEST:
+					// Tile above
+					pq.add(new State(currState, currDirection.changeDirection('r'), new Point(currentNode.x, currentNode.y + 1)));
+					// Tile below
+					pq.add(new State(currState, currDirection.changeDirection('l'),	new Point(currentNode.x, currentNode.y - 1)));
+					// Tile left
+					pq.add(new State(currState, currDirection.changeDirection('r').changeDirection('r'),
+							new Point(currentNode.x - 1, currentNode.y)));
+					//Tile Right
+					pq.add(new State(currState, currDirection, new Point(currentNode.x + 1, currentNode.y)));
+					break;
+				default:
+					break;
+			}
+			
+			// Hacky method to return null on no path
+			iterations++;
+			if (iterations == 10000) break;
+		}
+		
+		return (iterations == 10000) ? null : currState.getPath();
 	}
 	
 	public Tile getTileAt(int x, int y) {
