@@ -30,8 +30,15 @@ public class Agent {
 		
 	}
 	
-	public void decideBehaviours() {
+	public Move decideBehaviours() {
 		
+		Behaviour b = new GetGold(map, inventory, pos);
+		Queue<Move> moves = map.astar(b, currDirection);
+		
+		if (moves == null)
+			return null;
+		
+		return moves.poll();
 	}
 	
 	public boolean isValidMove() {
@@ -50,45 +57,70 @@ public class Agent {
 		} 
 		// Update the map or change directions 
 		switch (lastAction) {
-		case 'f':
-			if (map.isValidMove(currDirection)) { 
-				map.updateMap(view[0], currDirection);
-			}
-			break;
-		case 'l':
-		case 'r':
-			currDirection = currDirection.changeDirection(lastAction);
-			System.out.println("Now facing direction: " + currDirection.charVal);
-			break;
+			case 'f':
+				if (map.isValidMove(currDirection)) { 
+					map.updateMap(view[0], currDirection);
+					inventory = map.getItems();
+					pos = map.getPlayerPos();
+				}
+				break;
+			case 'l':
+			case 'r':
+				currDirection = currDirection.changeDirection(lastAction);
+				System.out.println("Now facing direction: " + currDirection.charVal);
+				break;
 		}
 		// Show the map the agent knows of so far
 		map.displayMap();
 		// REPLACE THIS CODE WITH AI TO CHOOSE ACTION
 
-		int ch=0;
-
-		System.out.print("Enter Action(s): ");
-
-		try {
-			while ( ch != -1 ) {
-				// read character from keyboard
-				ch  = System.in.read();
-
-				switch( ch ) { // if character is a valid action, return it
-				case 'F': case 'L': case 'R': case 'C': case 'U':
-				case 'f': case 'l': case 'r': case 'c': case 'u':
-					//if ((char) ch == 'f') {
-						
-					//}
-					lastAction = (char) ch;
-					return((char) ch );
+		
+		Move m = decideBehaviours();
+		if (m != null) {
+			lastAction = filterOutput(m);
+			return lastAction;
+		} 
+		else {
+			int ch=0;
+	
+			System.out.print("Enter Action(s): ");
+	
+			try {
+				while ( ch != -1 ) {
+					// read character from keyboard
+					ch  = System.in.read();
+	
+					switch( ch ) { // if character is a valid action, return it
+					case 'F': case 'L': case 'R': case 'C': case 'U':
+					case 'f': case 'l': case 'r': case 'c': case 'u':
+						//if ((char) ch == 'f') {
+							
+						//}
+						lastAction = (char) ch;
+						return((char) ch );
+					}
 				}
 			}
+			catch (IOException e) {
+				System.out.println ("IO error:" + e );
+			}
 		}
-		catch (IOException e) {
-			System.out.println ("IO error:" + e );
-		}
+		return 0;
+	}
 
+	private char filterOutput(Move m) {
+		if(m.d == currDirection)
+			return 'f';
+		
+		if (m.d.changeDirection('r').changeDirection('r') == currDirection)
+			return m.d.changeDirection('r').changeDirection('r').charVal;
+		
+		if (m.d.changeDirection('r') == currDirection)
+			return m.d.changeDirection('l').charVal;
+		
+		if (m.d.changeDirection('l') == currDirection)
+			return m.d.changeDirection('l').charVal;
+		
 		return 0;
 	}
 
@@ -154,7 +186,7 @@ public class Agent {
 						}
 					}
 				}
-				agent.print_view( view ); // COMMENT THIS OUT BEFORE SUBMISSION
+				//agent.print_view( view ); // COMMENT THIS OUT BEFORE SUBMISSION
 				action = agent.get_action( view );
 				out.write( action );
 			}
