@@ -1,5 +1,7 @@
+import java.awt.Point;
 import java.util.ArrayList;
 
 public interface Behaviour {
-	public int returnHeuristic(Graph map, ArrayList<Item> inventory);
+	public Point getGoal();
+	public int returnHeuristic(Point goal, Point currentPosition);
 }
