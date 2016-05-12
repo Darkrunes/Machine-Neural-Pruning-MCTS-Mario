@@ -226,7 +226,22 @@ public class Graph {
 			if(currentNode.equals(goal)) break;
 			if (currentNode.x > 160 || currentNode.y > 160) continue;
 			
+			// Tile above
+			pq.add(new State(currState, Direction.NORTH, new Point(currentNode.x, currentNode.y + 1),
+					currBehaviour, this, playerInv, goal));
+			// Tile Below
+			pq.add(new State(currState, Direction.SOUTH, new Point(currentNode.x, currentNode.y - 1),
+					currBehaviour, this, playerInv, goal));
+			// Tile Left
+			pq.add(new State(currState, Direction.WEST, new Point(currentNode.x - 1, currentNode.y),
+					currBehaviour, this, playerInv, goal));
+			// Tile Right
+			pq.add(new State(currState, Direction.EAST, new Point(currentNode.x + 1, currentNode.y),
+					currBehaviour, this, playerInv, goal));
+			
+			/*
 			switch(currDirection) {
+			
 				case NORTH:
 					// Tile above
 					pq.add(new State(currState, currDirection, new Point(currentNode.x, currentNode.y + 1),
@@ -288,7 +303,7 @@ public class Graph {
 				default:
 					break;
 			}
-			
+			*/
 			// Hacky method to return null on no path
 			iterations++;
 			if (iterations == 10000) break;
