@@ -113,13 +113,13 @@ public class Agent {
 			return 'f';
 		
 		if (m.d.changeDirection('r').changeDirection('r') == currDirection)
-			return m.d.changeDirection('r').changeDirection('r').charVal;
+			return 'r';
 		
 		if (m.d.changeDirection('r') == currDirection)
-			return m.d.changeDirection('l').charVal;
+			return 'l';
 		
 		if (m.d.changeDirection('l') == currDirection)
-			return m.d.changeDirection('l').charVal;
+			return  'r';
 		
 		return 0;
 	}

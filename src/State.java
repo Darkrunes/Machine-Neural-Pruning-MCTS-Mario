@@ -6,14 +6,17 @@ public class State implements Comparable<State>{
 	private Direction currDirection;
 	private Point pos;
 	private int fCost;
+	private Point goalNode;
 	private int hCost;
 	
-	private static final int impassableCost = Integer.MAX_VALUE - 0xffff;
+	private static final int impassableCost = Integer.MAX_VALUE - 0xffffff;
 	
-	public State(State ps, Direction d, Point p) {
+	public State(State ps, Direction d, Point p, Behaviour b, Graph map, ArrayList<Item> inventory, Point goal) {
 		this.prevState = ps;
 		this.currDirection = d;
 		this.pos = p;	
+		
+		calculateHeuristic(b, map, inventory, goal);
 	}
 	
 	/**
@@ -26,6 +29,8 @@ public class State implements Comparable<State>{
 		this.hCost = b.returnHeuristic(goal, pos);
 		Tile currTile = map.getTileAt(pos.x, pos.y);
 		int gCost = 0;
+		
+		goalNode = goal;
 		
 		// Paths that require an item require 2 moves to travel
 		// If the item is not in possession path is impassable
@@ -43,7 +48,7 @@ public class State implements Comparable<State>{
 			gCost = 1; break;
 		}	
 		
-		this.fCost = gCost + hCost;
+		this.fCost = (prevState == null) ? gCost + hCost : gCost + hCost + prevState.getGCost();
 	}
 	
 	/**
@@ -57,12 +62,33 @@ public class State implements Comparable<State>{
 		} else {
 			qm = prevState.getPath();
 		}
+
 		Move m = new Move();
 		m.d = currDirection;
 		qm.add(m);
-
+		
 		return qm;
 	}
+	
+	public Direction getDirection() {
+		return this.currDirection;
+	}
+	
+	public void printPath() {
+		if (prevState != null) {
+			prevState.printPath();
+			System.out.print(" -> " + this.pos.toString());
+		}
+		else {
+			System.out.println(goalNode.toString());
+			System.out.print(this.pos.toString());
+		}
+	}
+	
+	protected int getGCost() {
+		return this.fCost - this.hCost;
+	}
+	
 	
 	/**
 	 * Getter for the function cost of a state

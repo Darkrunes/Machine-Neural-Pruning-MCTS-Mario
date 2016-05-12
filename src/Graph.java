@@ -215,60 +215,75 @@ public class Graph {
 		Point goal = currBehaviour.getGoal();
 		int iterations = 0;
 		Point currentNode;
-		State currState = new State(null, currDirection, this.currPos);
+		State currState = new State(null, currDirection, this.currPos, currBehaviour, this, playerInv, goal);
 		PriorityQueue<State> pq = new PriorityQueue<State>();
 		pq.add(currState);
 		
 		while (true) {
 			currState = pq.poll();
 			currentNode = currState.getPos();
-			if(currState.getPos().equals(goal)) break;
+			currDirection = currState.getDirection();
+			if(currentNode.equals(goal)) break;
+			if (currentNode.x > 160 || currentNode.y > 160) continue;
 			
 			switch(currDirection) {
 				case NORTH:
 					// Tile above
-					pq.add(new State(currState, currDirection, new Point(currentNode.x, currentNode.y + 1)));
+					pq.add(new State(currState, currDirection, new Point(currentNode.x, currentNode.y + 1),
+							currBehaviour, this, playerInv, goal));
 					// Tile below
 					pq.add(new State(currState, currDirection.changeDirection('r').changeDirection('r'),
-							new Point(currentNode.x, currentNode.y - 1)));
+							new Point(currentNode.x, currentNode.y - 1), currBehaviour, this, playerInv, goal));
 					// Tile left
-					pq.add(new State(currState, currDirection.changeDirection('l'), new Point(currentNode.x - 1, currentNode.y)));
+					pq.add(new State(currState, currDirection.changeDirection('l'), new Point(currentNode.x - 1, currentNode.y),
+							currBehaviour, this, playerInv, goal));
 					//Tile Right
-					pq.add(new State(currState, currDirection.changeDirection('r'), new Point(currentNode.x + 1, currentNode.y)));
+					pq.add(new State(currState, currDirection.changeDirection('r'), new Point(currentNode.x + 1, currentNode.y),
+							currBehaviour, this, playerInv, goal));
 					break;
 					
 				case SOUTH:
 					// Tile above
 					pq.add(new State(currState, currDirection.changeDirection('r').changeDirection('r'),
-							new Point(currentNode.x, currentNode.y + 1)));
+							new Point(currentNode.x, currentNode.y + 1), currBehaviour, this, playerInv, goal));
 					// Tile below
-					pq.add(new State(currState, currDirection, new Point(currentNode.x, currentNode.y - 1)));
+					pq.add(new State(currState, currDirection, new Point(currentNode.x, currentNode.y - 1),
+							currBehaviour, this, playerInv, goal));
 					// Tile left
-					pq.add(new State(currState, currDirection.changeDirection('r'), new Point(currentNode.x - 1, currentNode.y)));
+					pq.add(new State(currState, currDirection.changeDirection('r'), new Point(currentNode.x - 1, currentNode.y), 
+							currBehaviour, this, playerInv, goal));
 					//Tile Right
-					pq.add(new State(currState, currDirection.changeDirection('l'), new Point(currentNode.x + 1, currentNode.y)));
+					pq.add(new State(currState, currDirection.changeDirection('l'), new Point(currentNode.x + 1, currentNode.y),
+							currBehaviour, this, playerInv, goal));
 					break;
 				case EAST:
 					// Tile above
-					pq.add(new State(currState, currDirection.changeDirection('l'), new Point(currentNode.x, currentNode.y + 1)));
+					pq.add(new State(currState, currDirection.changeDirection('l'), new Point(currentNode.x, currentNode.y + 1),
+							currBehaviour, this, playerInv, goal));
 					// Tile below
-					pq.add(new State(currState, currDirection.changeDirection('r'),new Point(currentNode.x, currentNode.y - 1)));
+					pq.add(new State(currState, currDirection.changeDirection('r'),new Point(currentNode.x, currentNode.y - 1),
+							currBehaviour, this, playerInv, goal));
 					// Tile left
-					pq.add(new State(currState, currDirection, new Point(currentNode.x - 1, currentNode.y)));
-					//Tile Right
 					pq.add(new State(currState, currDirection.changeDirection('r').changeDirection('r'),
-							new Point(currentNode.x + 1, currentNode.y)));
+							new Point(currentNode.x - 1, currentNode.y), currBehaviour, this, playerInv, goal));
+					//Tile Right
+					pq.add(new State(currState, currDirection,
+							new Point(currentNode.x + 1, currentNode.y), currBehaviour, this, playerInv, goal));
 					break;
 				case WEST:
 					// Tile above
-					pq.add(new State(currState, currDirection.changeDirection('r'), new Point(currentNode.x, currentNode.y + 1)));
+					pq.add(new State(currState, currDirection.changeDirection('r'), new Point(currentNode.x, currentNode.y + 1),
+							currBehaviour, this, playerInv, goal));
 					// Tile below
-					pq.add(new State(currState, currDirection.changeDirection('l'),	new Point(currentNode.x, currentNode.y - 1)));
+					pq.add(new State(currState, currDirection.changeDirection('l'),	new Point(currentNode.x, currentNode.y - 1),
+							currBehaviour, this, playerInv, goal));
 					// Tile left
-					pq.add(new State(currState, currDirection.changeDirection('r').changeDirection('r'),
-							new Point(currentNode.x - 1, currentNode.y)));
+					pq.add(new State(currState, currDirection,
+							new Point(currentNode.x - 1, currentNode.y), currBehaviour, this, playerInv, goal));
 					//Tile Right
-					pq.add(new State(currState, currDirection, new Point(currentNode.x + 1, currentNode.y)));
+					pq.add(new State(currState, currDirection.changeDirection('r').changeDirection('r'),
+							new Point(currentNode.x + 1, currentNode.y),
+							currBehaviour, this, playerInv, goal));
 					break;
 				default:
 					break;
@@ -278,6 +293,8 @@ public class Graph {
 			iterations++;
 			if (iterations == 10000) break;
 		}
+		
+		//currState.printPath();
 		
 		return (iterations == 10000) ? null : currState.getPath();
 	}

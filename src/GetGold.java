@@ -16,7 +16,7 @@ public class GetGold implements Behaviour{
 	
 	@Override
 	public Point getGoal() {
-		for (Item i: map.getItems()) {
+		for (Item i: map.itemsOnMap()) {
 			if (i.getItemName() == Tile.Gold)
 				return i.getPos();
 		}
@@ -25,13 +25,12 @@ public class GetGold implements Behaviour{
 				return startPoint;
 		}
 		
-		return startPoint;
+		return null;
 	}
 	
 	@Override
 	public int returnHeuristic(Point goal, Point currPosition) {
-		int h = Math.abs(goal.x - currPosition.x) + Math.abs(goal.y - currPosition.y);
-		return (h < 0) ? -h : h;
+		return Math.abs(goal.x - currPosition.x) + Math.abs(goal.y - currPosition.y);
 	}
 
 }
