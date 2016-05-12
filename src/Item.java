@@ -49,13 +49,17 @@ public class Item {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Item other = (Item) obj;
-		if (itemName != other.itemName)
-			return false;
-		if (!pos.equals(other.getPos()))
-			return false;
+		if (getClass() == obj.getClass()) {
+			Item other = (Item) obj;
+			if (itemName != other.itemName)
+				return false;
+			if (!pos.equals(other.getPos()))
+				return false;
+		} else if (obj instanceof Tile) {
+			Tile other = (Tile) obj;
+			if (this.getItemName() != other)
+				return false;
+		}
 		
 		return true;
 	}

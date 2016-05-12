@@ -183,9 +183,12 @@ public class Graph {
 		// Remove the item from the map if the player has picked it up
 		// TODO Account for case where stone is placed on water
 		if (Tile.isItem(map[currPos.y][currPos.x])) {
-			Item i = new Item(map[currPos.y][currPos.x], 0, new Point(currPos.y, currPos.x));
-			playerInv.add(i);
+			Item i = new Item(map[currPos.y][currPos.x], 0, new Point(currPos.x, currPos.y));
 			itemsOnMap.remove(itemsOnMap.indexOf(i));
+			// Items in inventory have a point of 0,0
+			i.setPos(new Point(0,0));
+			playerInv.add(i);
+			
 			map[currPos.y][currPos.x] = Tile.Empty;
 		} 
 	}
@@ -217,6 +220,7 @@ public class Graph {
 		Point goal = currBehaviour.getGoal();
 		int iterations = 0;
 		Point currentNode;
+		Point tempPoint;
 		State currState = new State(null, currDirection, this.currPos, currBehaviour, this, playerInv, goal);
 		PriorityQueue<State> pq = new PriorityQueue<State>();
 		pq.add(currState);
@@ -229,29 +233,59 @@ public class Graph {
 			if (currentNode.x > 160 || currentNode.y > 160) continue;
 			
 			// Tile above
-			pq.add(new State(currState, Direction.NORTH, new Point(currentNode.x, currentNode.y + 1),
-					currBehaviour, this, playerInv, goal));
+			tempPoint = new Point(currentNode.x, currentNode.y + 1);
+			if (canPassTile(tempPoint)) {
+				pq.add(new State(currState, Direction.NORTH, tempPoint,
+						currBehaviour, this, playerInv, goal));
+			}
+			
 			// Tile Below
-			pq.add(new State(currState, Direction.SOUTH, new Point(currentNode.x, currentNode.y - 1),
-					currBehaviour, this, playerInv, goal));
+			tempPoint = new Point(currentNode.x, currentNode.y - 1);
+			if (canPassTile(tempPoint)) {
+				pq.add(new State(currState, Direction.SOUTH, tempPoint,
+						currBehaviour, this, playerInv, goal));
+			}
+			
 			// Tile Left
-			pq.add(new State(currState, Direction.WEST, new Point(currentNode.x - 1, currentNode.y),
-					currBehaviour, this, playerInv, goal));
+			tempPoint = new Point(currentNode.x - 1, currentNode.y);
+			if (canPassTile(tempPoint)) {
+				pq.add(new State(currState, Direction.WEST, tempPoint,
+						currBehaviour, this, playerInv, goal));
+			}
+			
 			// Tile Right
-			pq.add(new State(currState, Direction.EAST, new Point(currentNode.x + 1, currentNode.y),
-					currBehaviour, this, playerInv, goal));
+			tempPoint = new Point(currentNode.x + 1, currentNode.y);
+			if (canPassTile(tempPoint)) {
+				pq.add(new State(currState, Direction.EAST, tempPoint,
+						currBehaviour, this, playerInv, goal));
+			}
 			
 			// Hacky method to return null on no path
 			iterations++;
-			if (iterations == 10000) break;
+			if (iterations == 1000) break;
 		}
 		
 		//currState.printPath();
 		
-		return (iterations == 10000) ? null : currState.getPath();
+		return (iterations == 1000) ? null : currState.getPath();
 	}
 	
 	public Tile getTileAt(int x, int y) {
 		return map[y][x];
+	}
+	
+	private boolean canPassTile(Point p) {
+		switch (map[p.x][p.y]) {
+			case Door:
+				 return playerInv.contains(Tile.Key);
+			case Water:
+				 return playerInv.contains(Tile.StepStone);
+			case Wall:
+				 return false;
+			case Tree:
+				 return playerInv.contains(Tile.Axe);
+			default:
+				return true;
+		}
 	}
 }

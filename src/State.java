@@ -39,11 +39,11 @@ public class State implements Comparable<State>{
 		case Wall:
 			gCost = impassableCost; break;
 		case Tree:
-			gCost = (inventory.contains("Axe")) ? 2 : impassableCost; break;
+			gCost = (inventory.contains(Tile.Axe)) ? 2 : impassableCost; break;
 		case Door:
-			gCost = (inventory.contains("Key")) ? 2 : impassableCost; break;
+			gCost = (inventory.contains(Tile.Key)) ? 2 : impassableCost; break;
 		case Water:
-			gCost = (inventory.contains("StepStone")) ? 2 : impassableCost; break;
+			gCost = (inventory.contains(Tile.StepStone)) ? 2 : impassableCost; break;
 		default:
 			gCost = 1; break;
 		}	
