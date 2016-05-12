@@ -54,6 +54,9 @@ public class Item {
 		Item other = (Item) obj;
 		if (itemName != other.itemName)
 			return false;
+		if (!pos.equals(other.getPos()))
+			return false;
+		
 		return true;
 	}
 	

@@ -183,7 +183,9 @@ public class Graph {
 		// Remove the item from the map if the player has picked it up
 		// TODO Account for case where stone is placed on water
 		if (Tile.isItem(map[currPos.y][currPos.x])) {
-			playerInv.add(new Item(map[currPos.y][currPos.x], 0, new Point(0,0)));
+			Item i = new Item(map[currPos.y][currPos.x], 0, new Point(currPos.y, currPos.x));
+			playerInv.add(i);
+			itemsOnMap.remove(itemsOnMap.indexOf(i));
 			map[currPos.y][currPos.x] = Tile.Empty;
 		} 
 	}
@@ -239,71 +241,6 @@ public class Graph {
 			pq.add(new State(currState, Direction.EAST, new Point(currentNode.x + 1, currentNode.y),
 					currBehaviour, this, playerInv, goal));
 			
-			/*
-			switch(currDirection) {
-			
-				case NORTH:
-					// Tile above
-					pq.add(new State(currState, currDirection, new Point(currentNode.x, currentNode.y + 1),
-							currBehaviour, this, playerInv, goal));
-					// Tile below
-					pq.add(new State(currState, currDirection.changeDirection('r').changeDirection('r'),
-							new Point(currentNode.x, currentNode.y - 1), currBehaviour, this, playerInv, goal));
-					// Tile left
-					pq.add(new State(currState, currDirection.changeDirection('l'), new Point(currentNode.x - 1, currentNode.y),
-							currBehaviour, this, playerInv, goal));
-					//Tile Right
-					pq.add(new State(currState, currDirection.changeDirection('r'), new Point(currentNode.x + 1, currentNode.y),
-							currBehaviour, this, playerInv, goal));
-					break;
-					
-				case SOUTH:
-					// Tile above
-					pq.add(new State(currState, currDirection.changeDirection('r').changeDirection('r'),
-							new Point(currentNode.x, currentNode.y + 1), currBehaviour, this, playerInv, goal));
-					// Tile below
-					pq.add(new State(currState, currDirection, new Point(currentNode.x, currentNode.y - 1),
-							currBehaviour, this, playerInv, goal));
-					// Tile left
-					pq.add(new State(currState, currDirection.changeDirection('r'), new Point(currentNode.x - 1, currentNode.y), 
-							currBehaviour, this, playerInv, goal));
-					//Tile Right
-					pq.add(new State(currState, currDirection.changeDirection('l'), new Point(currentNode.x + 1, currentNode.y),
-							currBehaviour, this, playerInv, goal));
-					break;
-				case EAST:
-					// Tile above
-					pq.add(new State(currState, currDirection.changeDirection('l'), new Point(currentNode.x, currentNode.y + 1),
-							currBehaviour, this, playerInv, goal));
-					// Tile below
-					pq.add(new State(currState, currDirection.changeDirection('r'),new Point(currentNode.x, currentNode.y - 1),
-							currBehaviour, this, playerInv, goal));
-					// Tile left
-					pq.add(new State(currState, currDirection.changeDirection('r').changeDirection('r'),
-							new Point(currentNode.x - 1, currentNode.y), currBehaviour, this, playerInv, goal));
-					//Tile Right
-					pq.add(new State(currState, currDirection,
-							new Point(currentNode.x + 1, currentNode.y), currBehaviour, this, playerInv, goal));
-					break;
-				case WEST:
-					// Tile above
-					pq.add(new State(currState, currDirection.changeDirection('r'), new Point(currentNode.x, currentNode.y + 1),
-							currBehaviour, this, playerInv, goal));
-					// Tile below
-					pq.add(new State(currState, currDirection.changeDirection('l'),	new Point(currentNode.x, currentNode.y - 1),
-							currBehaviour, this, playerInv, goal));
-					// Tile left
-					pq.add(new State(currState, currDirection,
-							new Point(currentNode.x - 1, currentNode.y), currBehaviour, this, playerInv, goal));
-					//Tile Right
-					pq.add(new State(currState, currDirection.changeDirection('r').changeDirection('r'),
-							new Point(currentNode.x + 1, currentNode.y),
-							currBehaviour, this, playerInv, goal));
-					break;
-				default:
-					break;
-			}
-			*/
 			// Hacky method to return null on no path
 			iterations++;
 			if (iterations == 10000) break;

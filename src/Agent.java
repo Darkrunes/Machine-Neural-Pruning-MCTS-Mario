@@ -9,6 +9,7 @@ public class Agent {
 	private Graph map;
 	private Direction currDirection;
 	private Point pos;
+	private Point startPos;
 	private ArrayList<Item> inventory;
 	private char lastAction;
 	private int turnNum;
@@ -22,6 +23,7 @@ public class Agent {
 		currDirection = Direction.NORTH;
 		char lastAction = 'n';
 		pos = new Point(80, 80);
+		startPos = pos;
 		inventory = new ArrayList<Item>();
 		int turnNum = 0;
 	}
@@ -32,7 +34,7 @@ public class Agent {
 	
 	public Move decideBehaviours() {
 		
-		Behaviour b = new GetGold(map, inventory, pos);
+		Behaviour b = new GetGold(map, inventory, startPos);
 		Queue<Move> moves = map.astar(b, currDirection);
 		
 		if (moves == null)
