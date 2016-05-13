@@ -223,6 +223,7 @@ public class Graph {
 		Point tempPoint;
 		State currState = new State(null, currDirection, this.currPos, currBehaviour, this, playerInv, goal);
 		PriorityQueue<State> pq = new PriorityQueue<State>();
+		ArrayList<Point> visited = new ArrayList<Point>();
 		pq.add(currState);
 		
 		while (true) {
@@ -265,9 +266,11 @@ public class Graph {
 			if (iterations == 1000) break;
 		}
 		
-		//currState.printPath();
+		currState.printPath();
+		Queue<Move> path = currState.getPath();
+		//path.remove();
 		
-		return (iterations == 1000) ? null : currState.getPath();
+		return (iterations == 1000) ? null : path;
 	}
 	
 	public Tile getTileAt(int x, int y) {
@@ -275,7 +278,7 @@ public class Graph {
 	}
 	
 	private boolean canPassTile(Point p) {
-		switch (map[p.x][p.y]) {
+		switch (map[p.y][p.x]) {
 			case Door:
 				 return playerInv.contains(Tile.Key);
 			case Water:
