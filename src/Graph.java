@@ -103,6 +103,7 @@ public class Graph {
 			if (map[currPos.y][currPos.x-1] == Tile.Empty) return true;
 			break;	
 		}
+		System.out.println("Invalid move detected");
 		return false;
 	}
 	
@@ -132,13 +133,26 @@ public class Graph {
 		// Iterate through the row of 5 tiles 3 units away from the agent and update the map
 		if (currDirection == Direction.NORTH || currDirection == Direction.SOUTH) {
 			int tempX = 0;
-			for (int x = currPos.x - 2; x <= currPos.x + 2; x++) {
-				map[tempBoundary][x] = Tile.getTile(topTiles[tempX]);
-				// Store location of items 
-				if (Tile.isItem(map[tempBoundary][x])) {
-					itemsOnMap.add(new Item(map[tempBoundary][x], 1, new Point(x, tempBoundary)));
+			if (currDirection == Direction.NORTH) {
+				for (int x = currPos.x - 2; x <= currPos.x + 2; x++) {
+					map[tempBoundary][x] = Tile.getTile(topTiles[tempX]);
+					System.out.printf("Tile at (%d,%d) updated to %c\n", x, tempBoundary, topTiles[tempX]);
+					// Store location of items 
+					if (Tile.isItem(map[tempBoundary][x])) {
+						itemsOnMap.add(new Item(map[tempBoundary][x], 1, new Point(x, tempBoundary)));
+					}
+					tempX += 1;
 				}
-				tempX += 1;
+			} else {
+				for (int x = currPos.x + 2; x >= currPos.x - 2; x--) {
+					map[tempBoundary][x] = Tile.getTile(topTiles[tempX]);
+					System.out.printf("Tile at (%d,%d) updated to %c\n", x, tempBoundary, topTiles[tempX]);
+					// Store location of items 
+					if (Tile.isItem(map[tempBoundary][x])) {
+						itemsOnMap.add(new Item(map[tempBoundary][x], 1, new Point(x, tempBoundary)));
+					}
+					tempX += 1;
+				}
 			}
 			if (currDirection == Direction.NORTH) {
 				if (currPos.y+3 > exploredHighBound.y) exploredHighBound.y = currPos.y+3; 
@@ -148,13 +162,26 @@ public class Graph {
 			}
 		} else {
 			int tempY = 0;
-			for (int y = currPos.y - 2; y <= currPos.y + 2; y++) {
-				map[y][tempBoundary] = Tile.getTile(topTiles[tempY]);
-				// Store location of items 
-				if (Tile.isItem(map[y][tempBoundary])) {
-					itemsOnMap.add(new Item(map[y][tempBoundary], 1, new Point(tempBoundary, y)));
+			if (currDirection == Direction.EAST) {
+				for (int y = currPos.y + 2; y >= currPos.y - 2; y--) {
+					map[y][tempBoundary] = Tile.getTile(topTiles[tempY]);
+					System.out.printf("Tile at (%d,%d) updated to %c\n", tempBoundary, y, topTiles[tempY]);
+					// Store location of items 
+					if (Tile.isItem(map[y][tempBoundary])) {
+						itemsOnMap.add(new Item(map[y][tempBoundary], 1, new Point(tempBoundary, y)));
+					}
+					tempY += 1;
 				}
-				tempY += 1;
+			} else {
+				for (int y = currPos.y - 2; y <= currPos.y + 2; y++) {
+					map[y][tempBoundary] = Tile.getTile(topTiles[tempY]);
+					System.out.printf("Tile at (%d,%d) updated to %c\n", tempBoundary, y, topTiles[tempY]);
+					// Store location of items 
+					if (Tile.isItem(map[y][tempBoundary])) {
+						itemsOnMap.add(new Item(map[y][tempBoundary], 1, new Point(tempBoundary, y)));
+					}
+					tempY += 1;
+				}
 			}
 			// Update the approximate locations explored on the map
 			if (currDirection == Direction.EAST) {
@@ -207,6 +234,28 @@ public class Graph {
 		return itemsOnMap;
 	}
 	
+	public Point getExploredLow() {
+		return this.exploredLowBound;
+	}
+	
+	public Point getExploredHigh() {
+		return this.exploredHighBound;
+	}
+	
+	public boolean itemSeen(Tile item) {
+		for (Item currItem: itemsOnMap) {
+			if (currItem.getItemName().equals(item)) return true;
+		}
+		return false;
+	}
+	
+	public boolean holdingItem(Tile item) {
+		for (Item currItem: playerInv) {
+			if (currItem.getItemName().equals(item)) return true;
+		}
+		return false;		
+	}
+	
 	/**
 	 * Given the starting direction and a behavior which determines the goal and heuristic, 
 	 * this will return a queue of moves to the goal or null if none is present.
@@ -229,6 +278,10 @@ public class Graph {
 		while (true) {
 			currState = pq.poll();
 			currentNode = currState.getPos();
+			// Check if state has been visited
+			if (tileVisited(visited, currentNode)) continue;
+			// Add the current node's position to the visited set
+			visited.add(currentNode);
 			currDirection = currState.getDirection();
 			if(currentNode.equals(goal)) break;
 			if (currentNode.x > 160 || currentNode.y > 160) continue;
@@ -279,6 +332,28 @@ public class Graph {
 		return map[y][x];
 	}
 	
+	public Move getRandomMove() {
+		Random rand = new Random();
+		Direction d = Direction.NONE;
+		switch (rand.nextInt(4)) {
+		case 0:
+			d = Direction.NORTH;
+			break;
+		case 1:
+			d = Direction.EAST;
+			break;
+		case 2:
+			d = Direction.SOUTH;
+			break;
+		case 3:
+			d = Direction.WEST;
+			break;
+		}
+		Move m = new Move();
+		m.d = d;
+		return m;
+	}
+	
 	private boolean canPassTile(Point p) {
 		switch (map[p.y][p.x]) {
 			case Door:
@@ -292,5 +367,12 @@ public class Graph {
 			default:
 				return true;
 		}
+	}
+	
+	private boolean tileVisited(ArrayList<Point> visited, Point pos) {
+		for (Point currPoint: visited) {
+			if (currPoint.x == pos.x && currPoint.y == pos.y) return true;
+		}
+		return false;
 	}
 }

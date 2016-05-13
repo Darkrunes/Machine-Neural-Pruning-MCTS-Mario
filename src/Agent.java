@@ -13,6 +13,7 @@ public class Agent {
 	private ArrayList<Item> inventory;
 	private char lastAction;
 	private int turnNum;
+	private Queue<Move> exploreQueue;
 	
 	/**
 	 * Constructor
@@ -26,6 +27,7 @@ public class Agent {
 		startPos = pos;
 		inventory = new ArrayList<Item>();
 		turnNum = 0;
+		exploreQueue = new LinkedList<Move>();
 	}
 	
 	public void filterInput() {
@@ -33,13 +35,46 @@ public class Agent {
 	}
 	
 	public Move decideBehaviours() {
+		Move m;
+		if (map.itemSeen(Tile.Gold) || map.holdingItem(Tile.Gold)) {
+			Behaviour b = new GetGold(map, inventory, startPos);
+			Queue<Move> moves = map.astar(b, currDirection);
+			if (moves == null)
+				return null;
+			return moves.poll();	
+		} else if (exploreQueue.size() > 0) {
+			System.out.println("On previous exploration");
+			m = exploreQueue.poll();
+			if (map.isValidMove(m.d)) return m;
+			exploreQueue = new LinkedList<Move>();
+		} else {
+			System.out.println("Going to start exploration!");
+			Random rand = new Random();
+			Point toExplore = new Point();
+			if (rand.nextInt(2) == 0) {
+				toExplore.x = map.getExploredHigh().x;
+				toExplore.y = map.getExploredHigh().y;
+				toExplore.x += rand.nextInt(10) + 2;
+				toExplore.y += rand.nextInt(10) + 2;
+			} else {
+				toExplore.x = map.getExploredLow().x;
+				toExplore.y = map.getExploredLow().y;
+				toExplore.x -= rand.nextInt(10) - 2;
+				toExplore.y -= rand.nextInt(10) - 2;
+			}
+			Behaviour b = new Explore(map, inventory, toExplore);
+			exploreQueue = map.astar(b, currDirection);
+			m = exploreQueue.poll();
+			if (map.isValidMove(m.d)) return m;
+			exploreQueue = new LinkedList<Move>();
+		}
+		// Default mode is explore mode (Making random moves to explore the map)
+		m = map.getRandomMove();
+		while (!map.isValidMove(m.d)) {
+			m = map.getRandomMove();
+		}
+		return m;
 		
-		Behaviour b = new GetGold(map, inventory, startPos);
-		Queue<Move> moves = map.astar(b, currDirection);
-		
-		if (moves == null)
-			return null;
-		return moves.poll();
 	}
 	
 	public boolean isValidMove() {
@@ -74,9 +109,15 @@ public class Agent {
 		// Show the map the agent knows of so far
 		map.displayMap();
 		System.out.println("+-----------------------+");
+		print_view(view);
+		System.out.println("+-----------------------+");
 		// REPLACE THIS CODE WITH AI TO CHOOSE ACTION
-
-		
+		try {
+		    Thread.sleep(250);                 //1000 milliseconds is one second.
+		} catch(InterruptedException ex) {
+		    Thread.currentThread().interrupt();
+		}
+		//Move m = null;
 		Move m = decideBehaviours();
 		if (m != null) {
 			lastAction = filterOutput(m);
