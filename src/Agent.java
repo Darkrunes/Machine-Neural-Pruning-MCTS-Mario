@@ -25,7 +25,7 @@ public class Agent {
 		pos = new Point(80, 80);
 		startPos = pos;
 		inventory = new ArrayList<Item>();
-		int turnNum = 0;
+		turnNum = 0;
 	}
 	
 	public void filterInput() {
@@ -39,7 +39,6 @@ public class Agent {
 		
 		if (moves == null)
 			return null;
-		
 		return moves.poll();
 	}
 	
@@ -74,6 +73,7 @@ public class Agent {
 		}
 		// Show the map the agent knows of so far
 		map.displayMap();
+		System.out.println("+-----------------------+");
 		// REPLACE THIS CODE WITH AI TO CHOOSE ACTION
 
 		

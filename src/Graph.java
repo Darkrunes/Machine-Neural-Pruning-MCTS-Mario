@@ -266,9 +266,11 @@ public class Graph {
 			if (iterations == 1000) break;
 		}
 		
-		currState.printPath();
+		//currState.printPath();
 		Queue<Move> path = currState.getPath();
-		//path.remove();
+		// Remove the state that was used to begin the search. It was only temporary to begin with
+		// and it has no value in terms of being in the path to the goal as it can lead the agent to lose the game.
+		path.remove();
 		
 		return (iterations == 1000) ? null : path;
 	}

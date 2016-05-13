@@ -62,11 +62,9 @@ public class State implements Comparable<State>{
 		} else {
 			qm = prevState.getPath();
 		}
-
 		Move m = new Move();
 		m.d = currDirection;
 		qm.add(m);
-		
 		return qm;
 	}
 	
@@ -106,6 +104,15 @@ public class State implements Comparable<State>{
 		return pos;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (o.getClass() == this.getClass()) {
+			State otherState = (State) o;
+			if (otherState.getPos().x == this.pos.x && otherState.getPos().y == this.pos.y) return true;
+		}
+		return false;
+	}
+	
 	@Override
 	public int compareTo(State o) {
 		if (o == this) return 0;
