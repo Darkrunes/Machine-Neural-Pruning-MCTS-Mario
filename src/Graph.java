@@ -84,16 +84,16 @@ public class Graph {
 	 * @param currDirection The direction that the agent is going to move in
 	 * @return true if the next move forward is valid
 	 */
-	public boolean isValidMove(Direction currDirection) {
+	public boolean isValidMove(Direction currDirection, boolean canUseStone) {
 		switch (currDirection) {
 		case NORTH:
-			return canPassTile(new Point(currPos.x, currPos.y + 1));
+			return canPassTile(new Point(currPos.x, currPos.y + 1), canUseStone);
 		case SOUTH:
-			return canPassTile(new Point(currPos.x, currPos.y - 1));
+			return canPassTile(new Point(currPos.x, currPos.y - 1), canUseStone);
 		case EAST:
-			return canPassTile(new Point(currPos.x + 1, currPos.y));
+			return canPassTile(new Point(currPos.x + 1, currPos.y), canUseStone);
 		case WEST:
-			return canPassTile(new Point(currPos.x - 1, currPos.y));
+			return canPassTile(new Point(currPos.x - 1, currPos.y), canUseStone);
 		}
 		System.out.println("Invalid move detected");
 		return false;
@@ -206,6 +206,10 @@ public class Graph {
 			map[currPos.y][currPos.x] = Tile.Empty;
 			removeItemOnMap(new Point(currPos.x, currPos.y));
 		} 
+		if (map[currPos.y][currPos.x] == Tile.Water) {
+			map[currPos.y][currPos.x] = Tile.UsedStepStone;
+			playerInv.remove(Tile.StepStone);
+		}
 	}
 	
 	public void removeItemOnMap(Point pos) {
@@ -270,6 +274,7 @@ public class Graph {
 		State currState = new State(null, currDirection, this.currPos, currBehaviour, this, playerInv, goal);
 		PriorityQueue<State> pq = new PriorityQueue<State>();
 		ArrayList<Point> visited = new ArrayList<Point>();
+		boolean canUseStone = currBehaviour.canUseStone();
 		pq.add(currState);
 		
 		while (true) {
@@ -289,28 +294,28 @@ public class Graph {
 			
 			// Tile above
 			tempPoint = new Point(currentNode.x, currentNode.y + 1);
-			if (canPassTile(tempPoint)) {
+			if (canPassTile(tempPoint, canUseStone)) {
 				pq.add(new State(currState, Direction.NORTH, tempPoint,
 						currBehaviour, this, playerInv, goal));
 			}
 			
 			// Tile Below
 			tempPoint = new Point(currentNode.x, currentNode.y - 1);
-			if (canPassTile(tempPoint)) {
+			if (canPassTile(tempPoint, canUseStone)) {
 				pq.add(new State(currState, Direction.SOUTH, tempPoint,
 						currBehaviour, this, playerInv, goal));
 			}
 			
 			// Tile Left
 			tempPoint = new Point(currentNode.x - 1, currentNode.y);
-			if (canPassTile(tempPoint)) {
+			if (canPassTile(tempPoint, canUseStone)) {
 				pq.add(new State(currState, Direction.WEST, tempPoint,
 						currBehaviour, this, playerInv, goal));
 			}
 			
 			// Tile Right
 			tempPoint = new Point(currentNode.x + 1, currentNode.y);
-			if (canPassTile(tempPoint)) {
+			if (canPassTile(tempPoint, canUseStone)) {
 				pq.add(new State(currState, Direction.EAST, tempPoint,
 						currBehaviour, this, playerInv, goal));
 			}
@@ -365,16 +370,19 @@ public class Graph {
 	}
 	
 	public void printInventory() {
+		System.out.println("\n-------------\nInventory:");
 		System.out.println("Axe: " + playerInv.contains(Tile.Axe));
 		System.out.println("Step stone: " + playerInv.contains(Tile.StepStone));
 		System.out.println("Key: " + playerInv.contains(Tile.Key));
+		System.out.println("---------------");
 	}
 	
-	private boolean canPassTile(Point p) {
+	private boolean canPassTile(Point p, boolean canUseStone) {
 		switch (map[p.y][p.x]) {
 			case Door:
 			    return playerInv.contains(Tile.Key);
 			case Water:
+				if (!canUseStone) return false;
 				return playerInv.contains(Tile.StepStone);
 			case Wall:
 				return false;

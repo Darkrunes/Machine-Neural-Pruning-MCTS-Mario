@@ -3,7 +3,8 @@
  */
 public enum Tile {
 	Empty(' '), Wall('*'), Tree('T'), Axe('a'), Gold('g'), Key('k'), Door('-'), 
-	StartPosition('s'), Water('~'), StepStone('o'), Player('^'), Unexplored('?');
+	StartPosition('s'), Water('~'), StepStone('o'), Player('^'), Unexplored('?'),
+	UsedStepStone('O');
 	
     public char charVal;
 

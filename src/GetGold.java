@@ -29,5 +29,10 @@ public class GetGold implements Behaviour{
 	public int returnHeuristic(Point goal, Point currPosition) {
 		return Math.abs(goal.x - currPosition.x) + Math.abs(goal.y - currPosition.y);
 	}
+	
+	@Override 
+	public boolean canUseStone() {
+		return true;
+	}
 
 }

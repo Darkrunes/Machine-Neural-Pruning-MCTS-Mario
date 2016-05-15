@@ -23,4 +23,9 @@ public class Explore implements Behaviour{
 		return Math.abs(goal.x - currPosition.x) + Math.abs(goal.y - currPosition.y);
 	}
 
+	@Override 
+	public boolean canUseStone() {
+		return false;
+	}
+	
 }
