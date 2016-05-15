@@ -147,7 +147,7 @@ public class Agent {
 		map.printInventory();
 		Move m = decideBehaviours();
 		if (m != null) {
-			lastAction = filterOutput(m);
+			lastAction = filterOutput(m, view);
 			System.out.println("Behaviour = " + currBehaviour.toString());
 			System.out.println("Can use stone? " + currBehaviour.canUseStone());
 			return lastAction;
@@ -177,8 +177,10 @@ public class Agent {
 		return 0;
 	}
 
-	private char filterOutput(Move m) {
+	private char filterOutput(Move m, char view[][]) {
 		if(m.d == currDirection) {
+			if (view[1][2] == 'T') return 'c';
+			if (view[1][2] == '-') return 'u';
 			return 'f';
 		}
 		
