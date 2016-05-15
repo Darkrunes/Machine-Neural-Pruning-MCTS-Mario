@@ -64,4 +64,9 @@ public class Item {
 		return true;
 	}
 	
+	@Override 
+	public Item clone() {
+		return new Item(itemName, priorityWeight, pos);
+	}
+	
 }

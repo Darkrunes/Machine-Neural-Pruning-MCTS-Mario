@@ -11,7 +11,7 @@ public class State implements Comparable<State>{
 	
 	private static final int impassableCost = Integer.MAX_VALUE - 0xffffff;
 	
-	public State(State ps, Direction d, Point p, Behaviour b, Graph map, ArrayList<Item> inventory, Point goal) {
+	public State(State ps, Direction d, Point p, Behaviour b, Graph map, ArrayList<Tile> inventory, Point goal) {
 		this.prevState = ps;
 		this.currDirection = d;
 		this.pos = p;	
@@ -25,7 +25,7 @@ public class State implements Comparable<State>{
 	 * @param map			The map
 	 * @param inventory		Current player inventory
 	 */
-	public void calculateHeuristic(Behaviour b, Graph map, ArrayList<Item> inventory, Point goal) {
+	public void calculateHeuristic(Behaviour b, Graph map, ArrayList<Tile> inventory, Point goal) {
 		this.hCost = b.returnHeuristic(goal, pos);
 		Tile currTile = map.getTileAt(pos.x, pos.y);
 		int gCost = 0;

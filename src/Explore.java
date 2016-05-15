@@ -4,10 +4,10 @@ import java.util.ArrayList;
 public class Explore implements Behaviour{
 	
 	private Graph map;
-	private ArrayList<Item> inventory;
+	private ArrayList<Tile> inventory;
 	private Point goalPos;
 	
-	public Explore(Graph map, ArrayList<Item> inv, Point goalPos) {
+	public Explore(Graph map, ArrayList<Tile> inv, Point goalPos) {
 		this.map = map;
 		this.inventory = inv;
 		this.goalPos = goalPos;

@@ -4,7 +4,7 @@ import java.util.*;
 public class Graph {
 	private Tile[][] map;
 	private ArrayList<Item> itemsOnMap;
-	private ArrayList<Item> playerInv;		// very hacky change later
+	private ArrayList<Tile> playerInv;		// very hacky change later
 	private Point currPos;
 	private Point exploredLowBound;
 	private Point exploredHighBound;
@@ -12,7 +12,7 @@ public class Graph {
 	public Graph() {
 		map = new Tile[160][160];
 		itemsOnMap = new ArrayList<Item>();
-		playerInv = new ArrayList<Item>();
+		playerInv = new ArrayList<Tile>();
 		currPos = new Point(80, 80);
 		// Used to map which areas have been explored
 		exploredLowBound = new Point(80, 80);
@@ -87,21 +87,13 @@ public class Graph {
 	public boolean isValidMove(Direction currDirection) {
 		switch (currDirection) {
 		case NORTH:
-			if (Tile.isItem(map[currPos.y+1][currPos.x])) return true;
-			if (map[currPos.y+1][currPos.x] == Tile.Empty) return true;
-			break;
+			return canPassTile(new Point(currPos.x, currPos.y + 1));
 		case SOUTH:
-			if (Tile.isItem(map[currPos.y-1][currPos.x])) return true;
-			if (map[currPos.y-1][currPos.x] == Tile.Empty) return true;
-			break;
+			return canPassTile(new Point(currPos.x, currPos.y - 1));
 		case EAST:
-			if (Tile.isItem(map[currPos.y][currPos.x+1])) return true;
-			if (map[currPos.y][currPos.x+1] == Tile.Empty) return true;
-			break;
+			return canPassTile(new Point(currPos.x + 1, currPos.y));
 		case WEST:
-			if (Tile.isItem(map[currPos.y][currPos.x-1])) return true;
-			if (map[currPos.y][currPos.x-1] == Tile.Empty) return true;
-			break;	
+			return canPassTile(new Point(currPos.x - 1, currPos.y));
 		}
 		System.out.println("Invalid move detected");
 		return false;
@@ -210,12 +202,9 @@ public class Graph {
 		// Remove the item from the map if the player has picked it up
 		// TODO Account for case where stone is placed on water
 		if (Tile.isItem(map[currPos.y][currPos.x])) {
-			Item i = new Item(map[currPos.y][currPos.x], 0, new Point(currPos.x, currPos.y));
-			removeItemOnMap(new Point(currPos.x, currPos.y));
-			// Items in inventory have a point of 0,0
-			i.setPos(new Point(0,0));
-			playerInv.add(i);
+			playerInv.add(map[currPos.y][currPos.x]);
 			map[currPos.y][currPos.x] = Tile.Empty;
+			removeItemOnMap(new Point(currPos.x, currPos.y));
 		} 
 	}
 	
@@ -235,7 +224,7 @@ public class Graph {
 		return currPos;
 	}
 	
-	public ArrayList<Item> getItems() {
+	public ArrayList<Tile> getItems() {
 		// SUUUUPER hacky change later
 		return playerInv;
 	}
@@ -261,10 +250,7 @@ public class Graph {
 	}
 	
 	public boolean holdingItem(Tile item) {
-		for (Item currItem: playerInv) {
-			if (currItem.getItemName().equals(item)) return true;
-		}
-		return false;		
+		return (playerInv.contains(item)) ? true : false;
 	}
 	
 	/**
@@ -287,6 +273,10 @@ public class Graph {
 		pq.add(currState);
 		
 		while (true) {
+			if (pq.size() == 0) {
+				iterations = 2000;
+				break;
+			}
 			currState = pq.poll();
 			currentNode = currState.getPos();
 			// Check if state has been visited
@@ -365,16 +355,31 @@ public class Graph {
 		return m;
 	}
 	
+	public Point getItemPos(Tile itemName) {
+		for (Item currItem: itemsOnMap) {
+			if (currItem.getItemName() == itemName) {
+				return currItem.getPos();
+			}
+		}
+		return null;
+	}
+	
+	public void printInventory() {
+		System.out.println("Axe: " + playerInv.contains(Tile.Axe));
+		System.out.println("Step stone: " + playerInv.contains(Tile.StepStone));
+		System.out.println("Key: " + playerInv.contains(Tile.Key));
+	}
+	
 	private boolean canPassTile(Point p) {
 		switch (map[p.y][p.x]) {
 			case Door:
-				 return playerInv.contains(Tile.Key);
+			    return playerInv.contains(Tile.Key);
 			case Water:
-				 return playerInv.contains(Tile.StepStone);
+				return playerInv.contains(Tile.StepStone);
 			case Wall:
-				 return false;
+				return false;
 			case Tree:
-				 return playerInv.contains(Tile.Axe);
+				return playerInv.contains(Tile.Axe);
 			default:
 				return true;
 		}

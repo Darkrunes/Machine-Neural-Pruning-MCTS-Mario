@@ -10,7 +10,7 @@ public class Agent {
 	private Direction currDirection;
 	private Point pos;
 	private Point startPos;
-	private ArrayList<Item> inventory;
+	private ArrayList<Tile> inventory;
 	private char lastAction;
 	private int turnNum;
 	private Queue<Move> exploreQueue;
@@ -25,7 +25,7 @@ public class Agent {
 		char lastAction = 'n';
 		pos = new Point(80, 80);
 		startPos = pos;
-		inventory = new ArrayList<Item>();
+		inventory = new ArrayList<Tile>();
 		turnNum = 0;
 		exploreQueue = new LinkedList<Move>();
 	}
@@ -42,14 +42,28 @@ public class Agent {
 			if (map.holdingItem(Tile.Gold)) System.out.println("Going home");
 			Behaviour b = new GetGold(map, inventory, startPos);
 			Queue<Move> moves = map.astar(b, currDirection);
-			if (moves == null)
-				return null;
-			return moves.poll();	
+			if (moves != null)
+				return moves.poll();	
 		}
 		// Second priority is to get items that may help the agent get to the gold
-		//if (map.itemSeen(Tile.StepStone) || map.itemSeen(Tile.Axe) || map.itemSeen(Tile.Key)) {
-			
-		//}
+		if (map.itemSeen(Tile.StepStone)) {
+			System.out.println("Going to get step stone");
+			Behaviour b = new GetItem(map, inventory, map.getItemPos(Tile.StepStone));
+			Queue<Move> moves = map.astar(b, currDirection);
+			if (moves != null) return moves.poll();	
+		}
+		if (map.itemSeen(Tile.Key)) {
+			System.out.println("Going to get key");
+			Behaviour b = new GetItem(map, inventory, map.getItemPos(Tile.Key));
+			Queue<Move> moves = map.astar(b, currDirection);
+			if (moves != null) return moves.poll();	
+		}
+		if (map.itemSeen(Tile.Axe)) {
+			System.out.println("Going to get axe");
+			Behaviour b = new GetItem(map, inventory, map.getItemPos(Tile.Axe));
+			Queue<Move> moves = map.astar(b, currDirection);
+			if (moves != null) return moves.poll();	
+		}
 		// Third priority is explore the map
 		if (exploreQueue.size() > 0) {
 			System.out.println("On previous exploration");
@@ -75,7 +89,7 @@ public class Agent {
 			exploreQueue = map.astar(b, currDirection);
 			if (exploreQueue != null) {
 				m = exploreQueue.poll();
-				if (map.isValidMove(m.d)) return m;
+				if (m != null && map.isValidMove(m.d)) return m;
 			} else {
 				exploreQueue = new LinkedList<Move>();
 			}
@@ -122,14 +136,13 @@ public class Agent {
 		print_view(view);
 		System.out.println("+-----------------------+");
 		// REPLACE THIS CODE WITH AI TO CHOOSE ACTION
-		/*
 		try {
 		    Thread.sleep(250);                 //1000 milliseconds is one second.
 		} catch(InterruptedException ex) {
 		    Thread.currentThread().interrupt();
 		}
-		*/
 		//Move m = null;
+		map.printInventory();
 		Move m = decideBehaviours();
 		if (m != null) {
 			lastAction = filterOutput(m);
@@ -148,9 +161,6 @@ public class Agent {
 					switch( ch ) { // if character is a valid action, return it
 					case 'F': case 'L': case 'R': case 'C': case 'U':
 					case 'f': case 'l': case 'r': case 'c': case 'u':
-						//if ((char) ch == 'f') {
-							
-						//}
 						lastAction = (char) ch;
 						return((char) ch );
 					}
@@ -164,8 +174,9 @@ public class Agent {
 	}
 
 	private char filterOutput(Move m) {
-		if(m.d == currDirection)
+		if(m.d == currDirection) {
 			return 'f';
+		}
 		
 		if (m.d.changeDirection('r').changeDirection('r') == currDirection)
 			return 'r';

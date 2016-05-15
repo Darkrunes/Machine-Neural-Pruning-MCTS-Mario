@@ -4,10 +4,10 @@ import java.util.ArrayList;
 public class GetGold implements Behaviour{
 
 	private Graph map;
-	private ArrayList<Item> inventory;
+	private ArrayList<Tile> inventory;
 	private Point startPoint;
 	
-	public GetGold(Graph map, ArrayList<Item> inv, Point startPoint) {
+	public GetGold(Graph map, ArrayList<Tile> inv, Point startPoint) {
 		this.startPoint = startPoint;
 		this.map = map;
 		this.inventory = inv;
@@ -20,10 +20,7 @@ public class GetGold implements Behaviour{
 			if (i.getItemName() == Tile.Gold)
 				return i.getPos();
 		}
-		for (Item i : inventory) {
-			if (i.getItemName() == Tile.Gold)
-				return startPoint;
-		}
+		if (inventory.contains(Tile.Gold)) return startPoint;
 		
 		return null;
 	}
