@@ -16,11 +16,11 @@ public class GetGold implements Behaviour{
 	
 	@Override
 	public Point getGoal() {
+		if (inventory.contains(Tile.Gold)) return startPoint;
 		for (Item i: map.itemsOnMap()) {
 			if (i.getItemName() == Tile.Gold)
 				return i.getPos();
 		}
-		if (inventory.contains(Tile.Gold)) return startPoint;
 		
 		return null;
 	}

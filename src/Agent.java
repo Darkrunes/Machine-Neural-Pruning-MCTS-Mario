@@ -139,11 +139,13 @@ public class Agent {
 		print_view(view);
 		System.out.println("+-----------------------+");
 		// Slow down the agent so we can debug
+		/*
 		try {
 		    Thread.sleep(250);                
 		} catch(InterruptedException ex) {
 		    Thread.currentThread().interrupt();
 		}
+		*/
 		map.printInventory();
 		Move m = decideBehaviours();
 		if (m != null) {

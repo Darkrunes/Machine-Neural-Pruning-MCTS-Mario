@@ -221,7 +221,10 @@ public class Graph {
 			}
 		}
 		// Remove the item from the map and add it to the player's inventory
-		if (toRemove != null) itemsOnMap.remove(toRemove);
+		if (toRemove != null) {
+			System.out.println("Item " + toRemove.getItemName().charVal + " removed from map");
+			itemsOnMap.remove(toRemove);
+		}
 	}
 	
 	public Point getPlayerPos() {
