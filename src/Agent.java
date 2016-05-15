@@ -36,13 +36,22 @@ public class Agent {
 	
 	public Move decideBehaviours() {
 		Move m;
+		// First priority to is find the gold and go home
 		if (map.itemSeen(Tile.Gold) || map.holdingItem(Tile.Gold)) {
+			if (map.itemSeen(Tile.Gold)) System.out.println("Going to gold");
+			if (map.holdingItem(Tile.Gold)) System.out.println("Going home");
 			Behaviour b = new GetGold(map, inventory, startPos);
 			Queue<Move> moves = map.astar(b, currDirection);
 			if (moves == null)
 				return null;
 			return moves.poll();	
-		} else if (exploreQueue.size() > 0) {
+		}
+		// Second priority is to get items that may help the agent get to the gold
+		//if (map.itemSeen(Tile.StepStone) || map.itemSeen(Tile.Axe) || map.itemSeen(Tile.Key)) {
+			
+		//}
+		// Third priority is explore the map
+		if (exploreQueue.size() > 0) {
 			System.out.println("On previous exploration");
 			m = exploreQueue.poll();
 			if (map.isValidMove(m.d)) return m;
@@ -64,9 +73,12 @@ public class Agent {
 			}
 			Behaviour b = new Explore(map, inventory, toExplore);
 			exploreQueue = map.astar(b, currDirection);
-			m = exploreQueue.poll();
-			if (map.isValidMove(m.d)) return m;
-			exploreQueue = new LinkedList<Move>();
+			if (exploreQueue != null) {
+				m = exploreQueue.poll();
+				if (map.isValidMove(m.d)) return m;
+			} else {
+				exploreQueue = new LinkedList<Move>();
+			}
 		}
 		// Default mode is explore mode (Making random moves to explore the map)
 		m = map.getRandomMove();
@@ -94,11 +106,9 @@ public class Agent {
 		// Update the map or change directions 
 		switch (lastAction) {
 			case 'f':
-				if (map.isValidMove(currDirection)) { 
-					map.updateMap(view[0], currDirection);
-					inventory = map.getItems();
-					pos = map.getPlayerPos();
-				}
+				map.updateMap(view[0], currDirection);
+				inventory = map.getItems();
+				pos = map.getPlayerPos();
 				break;
 			case 'l':
 			case 'r':
@@ -112,11 +122,13 @@ public class Agent {
 		print_view(view);
 		System.out.println("+-----------------------+");
 		// REPLACE THIS CODE WITH AI TO CHOOSE ACTION
+		/*
 		try {
 		    Thread.sleep(250);                 //1000 milliseconds is one second.
 		} catch(InterruptedException ex) {
 		    Thread.currentThread().interrupt();
 		}
+		*/
 		//Move m = null;
 		Move m = decideBehaviours();
 		if (m != null) {

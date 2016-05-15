@@ -211,13 +211,24 @@ public class Graph {
 		// TODO Account for case where stone is placed on water
 		if (Tile.isItem(map[currPos.y][currPos.x])) {
 			Item i = new Item(map[currPos.y][currPos.x], 0, new Point(currPos.x, currPos.y));
-			itemsOnMap.remove(itemsOnMap.indexOf(i));
+			removeItemOnMap(new Point(currPos.x, currPos.y));
 			// Items in inventory have a point of 0,0
 			i.setPos(new Point(0,0));
 			playerInv.add(i);
-			
 			map[currPos.y][currPos.x] = Tile.Empty;
 		} 
+	}
+	
+	public void removeItemOnMap(Point pos) {
+		Item toRemove = null;
+		for (Item currItem: itemsOnMap) {
+			if (currItem.getPos().x == pos.x && currItem.getPos().x == pos.x) {
+				toRemove = currItem;
+				break;
+			}
+		}
+		// Remove the item from the map and add it to the player's inventory
+		if (toRemove != null) itemsOnMap.remove(toRemove);
 	}
 	
 	public Point getPlayerPos() {
@@ -316,7 +327,7 @@ public class Graph {
 			
 			// Hacky method to return null on no path
 			iterations++;
-			if (iterations == 1000) break;
+			if (iterations == 2000) break;
 		}
 		
 		//currState.printPath();
@@ -325,7 +336,7 @@ public class Graph {
 		// and it has no value in terms of being in the path to the goal as it can lead the agent to lose the game.
 		path.remove();
 		
-		return (iterations == 1000) ? null : path;
+		return (iterations == 2000) ? null : path;
 	}
 	
 	public Tile getTileAt(int x, int y) {
