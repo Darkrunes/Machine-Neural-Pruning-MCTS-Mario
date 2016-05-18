@@ -39,6 +39,7 @@ public class Agent {
 		Move m;
 		// First priority to is find the gold and go home
 		if (map.itemSeen(Tile.Gold) || map.holdingItem(Tile.Gold)) {
+			exploreQueue = new LinkedList<Move>();
 			if (map.itemSeen(Tile.Gold)) System.out.println("Going to gold");
 			if (map.holdingItem(Tile.Gold)) System.out.println("Going home");
 			currBehaviour = new GetGold(map, inventory, startPos);
@@ -48,18 +49,21 @@ public class Agent {
 		}
 		// Second priority is to get items that may help the agent get to the gold
 		if (map.itemSeen(Tile.StepStone)) {
+			exploreQueue = new LinkedList<Move>();
 			System.out.println("Going to get step stone");
 			currBehaviour = new GetItem(map, inventory, map.getItemPos(Tile.StepStone));
 			Queue<Move> moves = map.astar(currBehaviour, currDirection);
 			if (moves != null) return moves.poll();	
 		}
 		if (map.itemSeen(Tile.Key)) {
+			exploreQueue = new LinkedList<Move>();
 			System.out.println("Going to get key");
 			currBehaviour = new GetItem(map, inventory, map.getItemPos(Tile.Key));
 			Queue<Move> moves = map.astar(currBehaviour, currDirection);
 			if (moves != null) return moves.poll();	
 		}
 		if (map.itemSeen(Tile.Axe)) {
+			exploreQueue = new LinkedList<Move>();
 			System.out.println("Going to get axe");
 			currBehaviour = new GetItem(map, inventory, map.getItemPos(Tile.Axe));
 			Queue<Move> moves = map.astar(currBehaviour, currDirection);
@@ -77,16 +81,37 @@ public class Agent {
 			System.out.println("Going to start exploration!");
 			Random rand = new Random();
 			Point toExplore = new Point();
-			if (rand.nextInt(2) == 0) {
-				toExplore.x = map.getExploredHigh().x;
-				toExplore.y = map.getExploredHigh().y;
-				toExplore.x += rand.nextInt(10) + 2;
-				toExplore.y += rand.nextInt(10) + 2;
-			} else {
-				toExplore.x = map.getExploredLow().x;
-				toExplore.y = map.getExploredLow().y;
-				toExplore.x -= rand.nextInt(10) - 2;
-				toExplore.y -= rand.nextInt(10) - 2;
+			toExplore.x = 0xFFFFFF;
+			toExplore.y = 0xFFFFFF;
+			while (toExplore.x == 0xFFFFFF && toExplore.y == 0xFFFFFF) {
+				int randomInt = rand.nextInt(5); 
+				System.out.println("Rand: " + randomInt);
+				switch (randomInt) {
+				// Exploring to some point in top right of the map
+				case 0: case 1:
+					System.out.println("Exploring upper");
+					toExplore.x = map.getExploredHigh().x;
+					toExplore.y = map.getExploredHigh().y;
+					toExplore.x += rand.nextInt(10) + 2;
+					toExplore.y += rand.nextInt(10) + 2;
+					break;
+				// Exploring to some point in the bottom left of the map
+				case 2: case 3:
+					System.out.println("Exploring lower");
+					toExplore.x = map.getExploredLow().x;
+					toExplore.y = map.getExploredLow().y;
+					toExplore.x -= rand.nextInt(10) - 2;
+					toExplore.y -= rand.nextInt(10) - 2;
+					break;
+				// Exploring to some point within the current boundaries explored
+				default:
+					System.out.println("Exploring within");
+					Point withinBoundary = map.getUnexplored();
+					if (withinBoundary == null) break;
+					toExplore.x = withinBoundary.x;
+					toExplore.y = withinBoundary.y;
+					break;
+				}
 			}
 			currBehaviour = new Explore(map, inventory, toExplore);
 			exploreQueue = map.astar(currBehaviour, currDirection);
@@ -180,8 +205,12 @@ public class Agent {
 	}
 
 	private char filterOutput(Move m, char view[][]) {
-		if(m.d == currDirection) {
+		// Case where the Agent is moving forward where it may use an item its holding
+		// to clear an obstacle before moving forward
+		if (m.d == currDirection) {
+			// Cut down tree in the way
 			if (view[1][2] == 'T') return 'c';
+			// Unlock door in the way
 			if (view[1][2] == '-') return 'u';
 			return 'f';
 		}

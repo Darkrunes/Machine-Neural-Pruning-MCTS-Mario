@@ -100,6 +100,29 @@ public class Graph {
 	}
 	
 	/**
+	 * Get a point within the current boundaries that the agent has gone to which has been unexplored
+	 */
+	
+	public Point getUnexplored() {
+		ArrayList<Point> unexploredList = new ArrayList<Point>();
+		// Scan the map the agent knows of so far for unexplored points
+		for (int y = exploredHighBound.y; y >= exploredLowBound.y; y--) {
+			for (int x = exploredLowBound.x; x <= exploredHighBound.x; x++) {
+				// If a point hasn't been explored, add the point to the unexplored list
+				if (map[y][x].charVal == '?') {
+					Point unexploredPoint = new Point(x, y);
+					unexploredList.add(unexploredPoint);
+				}
+			}
+		}
+		// Randomly select one of the unexplored points and tell the agent to explore up to that point
+		Random rand = new Random();
+		if (unexploredList.size() == 0) return null; 
+		int randomIndex = rand.nextInt(unexploredList.size()); 
+		return unexploredList.get(randomIndex);
+	}
+	
+	/**
 	 * Updates the map using the first row of the 5x5 view that the agent has after it has moved forward
 	 * in one of the four directions. Also updates the player's current position on the map.
 	 * @param topTiles the first row of tiles that the agent sees in its 5x5 view
@@ -200,12 +223,12 @@ public class Graph {
 			break;	
 		}		
 		// Remove the item from the map if the player has picked it up
-		// TODO Account for case where stone is placed on water
 		if (Tile.isItem(map[currPos.y][currPos.x])) {
 			playerInv.add(map[currPos.y][currPos.x]);
 			map[currPos.y][currPos.x] = Tile.Empty;
 			removeItemOnMap(new Point(currPos.x, currPos.y));
 		} 
+		// Account for case where stone is placed on water
 		if (map[currPos.y][currPos.x] == Tile.Water) {
 			map[currPos.y][currPos.x] = Tile.UsedStepStone;
 			playerInv.remove(Tile.StepStone);
