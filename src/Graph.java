@@ -395,6 +395,46 @@ public class Graph {
 	}
 	
 	/**
+	 * Returns a list of items required for the trip to gold given a path
+	 * Example
+	 * [StepStone, Key, StepStone, Axe]
+	 * @param path			The path to be used to get to gold
+	 * @param startPos		The current player position
+	 * @return				List of items needed to get to gold
+	 */
+	private ArrayList<Tile> getItemsToReachGold(Queue<Move> path, Point startPos) {
+		
+		ArrayList<Tile> requiredItems = new ArrayList<Tile>();
+		ArrayList<Point> pointsOnPath = new ArrayList<Point>();
+		Point currPoint = new Point(startPos.x, startPos.y);
+		
+		for (Move m: path) {
+			switch(m.d){
+				case NORTH:
+					currPoint.translate(0, 1);
+					break;
+				case SOUTH:
+					currPoint.translate(0, -1);
+					break;
+				case EAST:
+					currPoint.translate(1, 0);
+					break;
+				case WEST:
+					currPoint.translate(-1, 0);
+					break;
+			}
+			pointsOnPath.add(new Point (currPoint.x, currPoint.y));
+		}
+		
+		for (Point p: pointsOnPath) {
+			requiredItems.add(map[p.y][p.x]);
+		}
+		
+		return requiredItems;
+	}
+	
+	
+	/**
 	 * Creates a deep copy of the inventory list passed in
 	 * @param inventory Inventory list to be cloned
 	 * @return Deep clone of the inventory list passed
