@@ -39,7 +39,7 @@ public class Agent {
 			if (map.holdingItem(Tile.Gold)) System.out.println("Going home");
 			currBehaviour = new GetGold(map, inventory, startPos);
 			Queue<Move> moves = map.astar(currBehaviour, currDirection);
-			if (moves != null)
+			if (moves != null && map.itemsStillRequiredForTravel(moves, pos).isEmpty())
 				return moves.poll();	
 			exploreQueue = new LinkedList<Move>();
 		}
@@ -51,21 +51,21 @@ public class Agent {
 			System.out.println("Going to get step stone");
 			currBehaviour = new GetItem(map, inventory, map.getItemPos(Tile.StepStone));
 			Queue<Move> moves = map.astar(currBehaviour, currDirection);
-			if (moves != null) return moves.poll();	
+			if (moves != null && map.itemsStillRequiredForTravel(moves, pos).isEmpty()) return moves.poll();	
 		}
 		if (map.itemSeen(Tile.Key) && !map.holdingItem(Tile.Key)) {
 			exploreQueue = new LinkedList<Move>();
 			System.out.println("Going to get key");
 			currBehaviour = new GetItem(map, inventory, map.getItemPos(Tile.Key));
 			Queue<Move> moves = map.astar(currBehaviour, currDirection);
-			if (moves != null) return moves.poll();	
+			if (moves != null && map.itemsStillRequiredForTravel(moves, pos).isEmpty()) return moves.poll();	
 		}
 		if (map.itemSeen(Tile.Axe) && !map.holdingItem(Tile.Axe)) {
 			exploreQueue = new LinkedList<Move>();
 			System.out.println("Going to get axe");
 			currBehaviour = new GetItem(map, inventory, map.getItemPos(Tile.Axe));
 			Queue<Move> moves = map.astar(currBehaviour, currDirection);
-			if (moves != null) return moves.poll();	
+			if (moves != null && map.itemsStillRequiredForTravel(moves, pos).isEmpty()) return moves.poll();	
 		}
 		// Third priority is explore the map
 		if (exploreQueue.size() > 0) {

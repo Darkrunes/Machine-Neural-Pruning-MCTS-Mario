@@ -48,5 +48,17 @@ public enum Tile {
     	}
     }
     
+    public static boolean isObstacle(Tile tile) {
+    	switch (tile) {
+    	case Water:
+    	case Door:
+    	case Tree:
+    	case Wall:
+    	case Unexplored:
+    		return true;
+    	default:
+    		return false;
+    	}
+    }
     
 }

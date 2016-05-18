@@ -316,7 +316,7 @@ public class Graph {
 		
 		while (true) {
 			if (pq.size() == 0) {
-				iterations = 2000;
+				iterations = 5000;
 				break;
 			}
 			currState = pq.poll();
@@ -382,7 +382,7 @@ public class Graph {
 			
 			// Hacky method to return null on no path
 			iterations++;
-			if (iterations == 2000) break;
+			if (iterations == 5000) break;
 		}
 		
 		currState.printPath();
@@ -391,7 +391,7 @@ public class Graph {
 		// and it has no value in terms of being in the path to the goal as it can lead the agent to lose the game.
 		path.remove();
 		
-		return (iterations == 2000) ? null : path;
+		return (iterations == 5000) ? null : path;
 	}
 	
 	/**
@@ -422,10 +422,35 @@ public class Graph {
 					currPoint.translate(-1, 0);
 					break;
 			}
-			requiredItems.add(map[currPoint.y][currPoint.x]);
+			if (Tile.isObstacle(map[currPoint.y][currPoint.x]))
+				requiredItems.add(map[currPoint.y][currPoint.x]);
 		}
 		
 		return requiredItems;
+	}
+	
+	public ArrayList<Tile> itemsStillRequiredForTravel(Queue<Move> path, Point startPos) {
+		ArrayList<Tile> items = getItemsToReachGold(path, startPos);
+		ArrayList<Tile> itemsLeft = deepClone(items);
+		ArrayList<Tile> inventory = deepClone(playerInv);
+		boolean usingStone = false;
+		
+		for (Tile item: items) {
+			if (item == Tile.Water && inventory.contains(Tile.StepStone)) {
+				usingStone = true;
+				itemsLeft.remove(item);
+				inventory.remove(Tile.StepStone);
+			}
+			else if (item == Tile.Door && inventory.contains(Tile.Key))
+				itemsLeft.remove(item);
+			else if (item == Tile.Tree && inventory.contains(Tile.Axe))
+				itemsLeft.remove(item);
+			else if (item == Tile.Unexplored && !usingStone) {
+				itemsLeft.remove(item);
+			}
+		}
+		
+		return itemsLeft;
 	}
 	
 	
@@ -505,11 +530,11 @@ public class Graph {
 			    return playerInv.contains(Tile.Key);
 			case Water:
 				if (!canUseStone) return false;
+				//if (itemsStillRequiredForTravel(m, playerPos).isEmpty()) return true;
 				return playerInv.contains(Tile.StepStone);
 			case Wall:
 				return false;
 			case Unexplored:
-				if (getGold == true) return false;
 				return true;
 			case Tree:
 				return playerInv.contains(Tile.Axe);
