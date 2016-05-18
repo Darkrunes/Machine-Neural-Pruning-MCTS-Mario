@@ -405,7 +405,6 @@ public class Graph {
 	private ArrayList<Tile> getItemsToReachGold(Queue<Move> path, Point startPos) {
 		
 		ArrayList<Tile> requiredItems = new ArrayList<Tile>();
-		ArrayList<Point> pointsOnPath = new ArrayList<Point>();
 		Point currPoint = new Point(startPos.x, startPos.y);
 		
 		for (Move m: path) {
@@ -423,11 +422,7 @@ public class Graph {
 					currPoint.translate(-1, 0);
 					break;
 			}
-			pointsOnPath.add(new Point (currPoint.x, currPoint.y));
-		}
-		
-		for (Point p: pointsOnPath) {
-			requiredItems.add(map[p.y][p.x]);
+			requiredItems.add(map[currPoint.y][currPoint.x]);
 		}
 		
 		return requiredItems;
