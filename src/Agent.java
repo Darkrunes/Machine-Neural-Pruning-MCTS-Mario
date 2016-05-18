@@ -23,7 +23,7 @@ public class Agent {
 		map = new Graph();
 		// Assume north is where ever we face at the start
 		currDirection = Direction.NORTH;
-		char lastAction = 'n';
+		lastAction = 'n';
 		pos = new Point(80, 80);
 		startPos = pos;
 		inventory = new ArrayList<Tile>();
@@ -31,23 +31,21 @@ public class Agent {
 		exploreQueue = new LinkedList<Move>();
 	}
 	
-	public void filterInput() {
-		
-	}
-	
 	public Move decideBehaviours() {
 		Move m;
 		// First priority to is find the gold and go home
 		if (map.itemSeen(Tile.Gold) || map.holdingItem(Tile.Gold)) {
-			exploreQueue = new LinkedList<Move>();
 			if (map.itemSeen(Tile.Gold)) System.out.println("Going to gold");
 			if (map.holdingItem(Tile.Gold)) System.out.println("Going home");
 			currBehaviour = new GetGold(map, inventory, startPos);
 			Queue<Move> moves = map.astar(currBehaviour, currDirection);
 			if (moves != null)
 				return moves.poll();	
+			exploreQueue = new LinkedList<Move>();
 		}
 		// Second priority is to get items that may help the agent get to the gold
+		// There is no need t pick up any other items except for the stepping stone
+		// since the axe and key can be used unlimited times
 		if (map.itemSeen(Tile.StepStone)) {
 			exploreQueue = new LinkedList<Move>();
 			System.out.println("Going to get step stone");
@@ -55,14 +53,14 @@ public class Agent {
 			Queue<Move> moves = map.astar(currBehaviour, currDirection);
 			if (moves != null) return moves.poll();	
 		}
-		if (map.itemSeen(Tile.Key)) {
+		if (map.itemSeen(Tile.Key) && !map.holdingItem(Tile.Key)) {
 			exploreQueue = new LinkedList<Move>();
 			System.out.println("Going to get key");
 			currBehaviour = new GetItem(map, inventory, map.getItemPos(Tile.Key));
 			Queue<Move> moves = map.astar(currBehaviour, currDirection);
 			if (moves != null) return moves.poll();	
 		}
-		if (map.itemSeen(Tile.Axe)) {
+		if (map.itemSeen(Tile.Axe) && !map.holdingItem(Tile.Axe)) {
 			exploreQueue = new LinkedList<Move>();
 			System.out.println("Going to get axe");
 			currBehaviour = new GetItem(map, inventory, map.getItemPos(Tile.Axe));
@@ -122,21 +120,14 @@ public class Agent {
 				exploreQueue = new LinkedList<Move>();
 			}
 		}
-		// Default mode is explore mode (Making random moves to explore the map)
+		currBehaviour = new Explore(null, null, null);
+		// Default mode is make a random move
 		m = map.getRandomMove();
 		while (!map.isValidMove(m.d, currBehaviour.canUseStone())) {
 			m = map.getRandomMove();
 		}
 		return m;
 		
-	}
-	
-	public boolean isValidMove() {
-		return true;
-	}
-	
-	public Direction returnOutput() {
-		return Direction.NONE;
 	}
 	
 	public char get_action( char view[][] ) {
@@ -164,13 +155,7 @@ public class Agent {
 		print_view(view);
 		System.out.println("+-----------------------+");
 		// Slow down the agent so we can debug
-		/*
-		try {
-		    Thread.sleep(250);                
-		} catch(InterruptedException ex) {
-		    Thread.currentThread().interrupt();
-		}
-		*/
+		//createDelay(250);
 		map.printInventory();
 		Move m = decideBehaviours();
 		if (m != null) {
@@ -179,29 +164,15 @@ public class Agent {
 			System.out.println("Can use stone? " + currBehaviour.canUseStone());
 			return lastAction;
 		} 
-		else {
-			int ch=0;
-	
-			System.out.print("Enter Action(s): ");
-	
-			try {
-				while ( ch != -1 ) {
-					// read character from keyboard
-					ch  = System.in.read();
-	
-					switch( ch ) { // if character is a valid action, return it
-					case 'F': case 'L': case 'R': case 'C': case 'U':
-					case 'f': case 'l': case 'r': case 'c': case 'u':
-						lastAction = (char) ch;
-						return((char) ch );
-					}
-				}
-			}
-			catch (IOException e) {
-				System.out.println ("IO error:" + e );
-			}
-		}
 		return 0;
+	}
+	
+	private void createDelay(int delay) {
+		try {
+		    Thread.sleep(delay);                
+		} catch(InterruptedException e) {
+		    Thread.currentThread().interrupt();
+		}
 	}
 
 	private char filterOutput(Move m, char view[][]) {

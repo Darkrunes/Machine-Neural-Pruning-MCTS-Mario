@@ -4,7 +4,8 @@ import java.util.*;
 public class Graph {
 	private Tile[][] map;
 	private ArrayList<Item> itemsOnMap;
-	private ArrayList<Tile> playerInv;		// very hacky change later
+	private ArrayList<Tile> playerInv;
+	private ArrayList<Tile> itemsRequired;
 	private Point currPos;
 	private Point exploredLowBound;
 	private Point exploredHighBound;
@@ -13,6 +14,7 @@ public class Graph {
 		map = new Tile[160][160];
 		itemsOnMap = new ArrayList<Item>();
 		playerInv = new ArrayList<Tile>();
+		itemsRequired = new ArrayList<Tile>();
 		currPos = new Point(80, 80);
 		// Used to map which areas have been explored
 		exploredLowBound = new Point(80, 80);
@@ -87,13 +89,13 @@ public class Graph {
 	public boolean isValidMove(Direction currDirection, boolean canUseStone) {
 		switch (currDirection) {
 		case NORTH:
-			return canPassTile(new Point(currPos.x, currPos.y + 1), canUseStone);
+			return canPassTile(new Point(currPos.x, currPos.y + 1), canUseStone, playerInv, false);
 		case SOUTH:
-			return canPassTile(new Point(currPos.x, currPos.y - 1), canUseStone);
+			return canPassTile(new Point(currPos.x, currPos.y - 1), canUseStone, playerInv, false);
 		case EAST:
-			return canPassTile(new Point(currPos.x + 1, currPos.y), canUseStone);
+			return canPassTile(new Point(currPos.x + 1, currPos.y), canUseStone, playerInv, false);
 		case WEST:
-			return canPassTile(new Point(currPos.x - 1, currPos.y), canUseStone);
+			return canPassTile(new Point(currPos.x - 1, currPos.y), canUseStone, playerInv, false);
 		}
 		System.out.println("Invalid move detected");
 		return false;
@@ -297,11 +299,20 @@ public class Graph {
 		int iterations = 0;
 		Point currentNode;
 		Point tempPoint;
-		State currState = new State(null, currDirection, this.currPos, currBehaviour, this, playerInv, goal);
+		ArrayList<Tile> invClone = deepClone(playerInv);
+		State currState = new State(null, currDirection, this.currPos, currBehaviour, this, invClone, goal);
 		PriorityQueue<State> pq = new PriorityQueue<State>();
 		ArrayList<Point> visited = new ArrayList<Point>();
 		boolean canUseStone = currBehaviour.canUseStone();
 		pq.add(currState);
+		
+		// Used to identify if a behaviour is the GetGold behaviour
+		// If it is GetGold, then the search cannot freely pass unexplored tiles
+		// This makes sure there is a path to the gold as the agent treats unexplored tiles
+		// as empty tiles which could lead to agent to not get the gold if that tile is something
+		// it cannot bypass such as water
+		boolean getGold = false;
+		if (map[goal.y][goal.x] == Tile.Gold) getGold = true;
 		
 		while (true) {
 			if (pq.size() == 0) {
@@ -310,40 +321,63 @@ public class Graph {
 			}
 			currState = pq.poll();
 			currentNode = currState.getPos();
+			invClone = currState.getInv();
 			// Check if state has been visited
 			if (tileVisited(visited, currentNode)) continue;
 			// Add the current node's position to the visited set
 			visited.add(currentNode);
 			currDirection = currState.getDirection();
 			if(currentNode.equals(goal)) break;
+			// If agent is out of bounds of the map, discard state
 			if (currentNode.x > 160 || currentNode.y > 160) continue;
+			if (currentNode.x < 0 || currentNode.y < 0) continue;
+			
+			ArrayList<Tile> tempInv = deepClone(invClone);
 			
 			// Tile above
 			tempPoint = new Point(currentNode.x, currentNode.y + 1);
-			if (canPassTile(tempPoint, canUseStone)) {
+			if (canPassTile(tempPoint, canUseStone, tempInv, getGold)) {
+				if (map[currentNode.y+1][currentNode.x] == Tile.Water && tempInv.contains(Tile.StepStone)) {
+					tempInv.remove(Tile.StepStone);
+				}
 				pq.add(new State(currState, Direction.NORTH, tempPoint,
-						currBehaviour, this, playerInv, goal));
+						currBehaviour, this, tempInv, goal));
 			}
+			
+			tempInv = deepClone(invClone);
 			
 			// Tile Below
 			tempPoint = new Point(currentNode.x, currentNode.y - 1);
-			if (canPassTile(tempPoint, canUseStone)) {
+			if (canPassTile(tempPoint, canUseStone, tempInv, getGold)) {
+				if (map[currentNode.y-1][currentNode.x] == Tile.Water && tempInv.contains(Tile.StepStone)) {
+					tempInv.remove(Tile.StepStone);
+				}
 				pq.add(new State(currState, Direction.SOUTH, tempPoint,
-						currBehaviour, this, playerInv, goal));
+						currBehaviour, this, tempInv, goal));
 			}
+			
+			tempInv = deepClone(invClone);
 			
 			// Tile Left
 			tempPoint = new Point(currentNode.x - 1, currentNode.y);
-			if (canPassTile(tempPoint, canUseStone)) {
+			if (canPassTile(tempPoint, canUseStone, tempInv, getGold)) {
+				if (map[currentNode.y][currentNode.x-1] == Tile.Water && tempInv.contains(Tile.StepStone)) {
+					tempInv.remove(Tile.StepStone);
+				}
 				pq.add(new State(currState, Direction.WEST, tempPoint,
-						currBehaviour, this, playerInv, goal));
+						currBehaviour, this, tempInv, goal));
 			}
+			
+			tempInv = deepClone(invClone);
 			
 			// Tile Right
 			tempPoint = new Point(currentNode.x + 1, currentNode.y);
-			if (canPassTile(tempPoint, canUseStone)) {
+			if (canPassTile(tempPoint, canUseStone, tempInv, getGold)) {
+				if (map[currentNode.y][currentNode.x+1] == Tile.Water && tempInv.contains(Tile.StepStone)) {
+					tempInv.remove(Tile.StepStone);
+				}
 				pq.add(new State(currState, Direction.EAST, tempPoint,
-						currBehaviour, this, playerInv, goal));
+						currBehaviour, this, tempInv, goal));
 			}
 			
 			// Hacky method to return null on no path
@@ -351,13 +385,36 @@ public class Graph {
 			if (iterations == 2000) break;
 		}
 		
-		//currState.printPath();
+		currState.printPath();
 		Queue<Move> path = currState.getPath();
 		// Remove the state that was used to begin the search. It was only temporary to begin with
 		// and it has no value in terms of being in the path to the goal as it can lead the agent to lose the game.
 		path.remove();
 		
 		return (iterations == 2000) ? null : path;
+	}
+	
+	/**
+	 * Creates a deep copy of the inventory list passed in
+	 * @param inventory Inventory list to be cloned
+	 * @return Deep clone of the inventory list passed
+	 */
+	private ArrayList<Tile> deepClone(ArrayList<Tile> inventory) {
+		ArrayList<Tile> newInventory = new ArrayList<Tile>();
+		for (Tile currItem: inventory) {
+			switch (currItem) {
+			case StepStone: 
+				newInventory.add(Tile.StepStone);
+				break;
+			case Axe: 
+				newInventory.add(Tile.Axe);
+				break;
+			case Key: 
+				newInventory.add(Tile.Key);
+				break;
+			}
+		}
+		return newInventory;
 	}
 	
 	public Tile getTileAt(int x, int y) {
@@ -398,12 +455,16 @@ public class Graph {
 	public void printInventory() {
 		System.out.println("\n-------------\nInventory:");
 		System.out.println("Axe: " + playerInv.contains(Tile.Axe));
-		System.out.println("Step stone: " + playerInv.contains(Tile.StepStone));
+		int stepStones = 0;
+		for (int i = 0; i < playerInv.size(); i++) {
+			if (playerInv.get(i) == Tile.StepStone) stepStones += 1;
+		}
+		System.out.println("Step stone: " + stepStones);
 		System.out.println("Key: " + playerInv.contains(Tile.Key));
 		System.out.println("---------------");
 	}
 	
-	private boolean canPassTile(Point p, boolean canUseStone) {
+	private boolean canPassTile(Point p, boolean canUseStone, ArrayList<Tile> playerInv, boolean getGold) {
 		switch (map[p.y][p.x]) {
 			case Door:
 			    return playerInv.contains(Tile.Key);
@@ -412,6 +473,9 @@ public class Graph {
 				return playerInv.contains(Tile.StepStone);
 			case Wall:
 				return false;
+			case Unexplored:
+				if (getGold == true) return false;
+				return true;
 			case Tree:
 				return playerInv.contains(Tile.Axe);
 			default:

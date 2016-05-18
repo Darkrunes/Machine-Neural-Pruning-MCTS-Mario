@@ -8,6 +8,7 @@ public class State implements Comparable<State>{
 	private int fCost;
 	private Point goalNode;
 	private int hCost;
+	private ArrayList<Tile> inventory;
 	
 	private static final int impassableCost = Integer.MAX_VALUE - 0xffffff;
 	
@@ -15,6 +16,7 @@ public class State implements Comparable<State>{
 		this.prevState = ps;
 		this.currDirection = d;
 		this.pos = p;	
+		this.inventory = inventory;
 		
 		calculateHeuristic(b, map, inventory, goal);
 	}
@@ -102,6 +104,10 @@ public class State implements Comparable<State>{
 	 */
 	public Point getPos() {
 		return pos;
+	}
+	
+	public ArrayList<Tile> getInv() {
+		return inventory;
 	}
 
 	@Override
