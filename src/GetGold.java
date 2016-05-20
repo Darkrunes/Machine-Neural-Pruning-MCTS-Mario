@@ -35,4 +35,10 @@ public class GetGold implements Behaviour{
 		return true;
 	}
 
+
+	@Override
+	public String getBehaviour() {
+		return "GetGold";
+	}
+
 }

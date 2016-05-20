@@ -27,5 +27,10 @@ public class Explore implements Behaviour{
 	public boolean canUseStone() {
 		return false;
 	}
+
+	@Override
+	public String getBehaviour() {
+		return "Explore";
+	}
 	
 }

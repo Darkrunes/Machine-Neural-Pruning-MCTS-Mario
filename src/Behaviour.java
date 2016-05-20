@@ -5,4 +5,5 @@ public interface Behaviour {
 	public Point getGoal();
 	public int returnHeuristic(Point goal, Point currentPosition);
 	public boolean canUseStone();
+	public String getBehaviour();
 }

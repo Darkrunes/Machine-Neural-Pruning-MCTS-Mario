@@ -153,7 +153,6 @@ public class Graph {
 			if (currDirection == Direction.NORTH) {
 				for (int x = currPos.x - 2; x <= currPos.x + 2; x++) {
 					map[tempBoundary][x] = Tile.getTile(topTiles[tempX]);
-					System.out.printf("Tile at (%d,%d) updated to %c\n", x, tempBoundary, topTiles[tempX]);
 					// Store location of items 
 					if (Tile.isItem(map[tempBoundary][x])) {
 						itemsOnMap.add(new Item(map[tempBoundary][x], 1, new Point(x, tempBoundary)));
@@ -163,7 +162,6 @@ public class Graph {
 			} else {
 				for (int x = currPos.x + 2; x >= currPos.x - 2; x--) {
 					map[tempBoundary][x] = Tile.getTile(topTiles[tempX]);
-					System.out.printf("Tile at (%d,%d) updated to %c\n", x, tempBoundary, topTiles[tempX]);
 					// Store location of items 
 					if (Tile.isItem(map[tempBoundary][x])) {
 						itemsOnMap.add(new Item(map[tempBoundary][x], 1, new Point(x, tempBoundary)));
@@ -182,7 +180,6 @@ public class Graph {
 			if (currDirection == Direction.EAST) {
 				for (int y = currPos.y + 2; y >= currPos.y - 2; y--) {
 					map[y][tempBoundary] = Tile.getTile(topTiles[tempY]);
-					System.out.printf("Tile at (%d,%d) updated to %c\n", tempBoundary, y, topTiles[tempY]);
 					// Store location of items 
 					if (Tile.isItem(map[y][tempBoundary])) {
 						itemsOnMap.add(new Item(map[y][tempBoundary], 1, new Point(tempBoundary, y)));
@@ -192,7 +189,6 @@ public class Graph {
 			} else {
 				for (int y = currPos.y - 2; y <= currPos.y + 2; y++) {
 					map[y][tempBoundary] = Tile.getTile(topTiles[tempY]);
-					System.out.printf("Tile at (%d,%d) updated to %c\n", tempBoundary, y, topTiles[tempY]);
 					// Store location of items 
 					if (Tile.isItem(map[y][tempBoundary])) {
 						itemsOnMap.add(new Item(map[y][tempBoundary], 1, new Point(tempBoundary, y)));
@@ -234,6 +230,10 @@ public class Graph {
 		if (map[currPos.y][currPos.x] == Tile.Water) {
 			map[currPos.y][currPos.x] = Tile.UsedStepStone;
 			playerInv.remove(Tile.StepStone);
+		}
+		// Update map if door unlocked or tree is cut down
+		if (map[currPos.y][currPos.x] == Tile.Door || map[currPos.y][currPos.x] == Tile.Tree) {
+			map[currPos.y][currPos.x] = Tile.Empty;
 		}
 	}
 	
@@ -305,6 +305,9 @@ public class Graph {
 		ArrayList<Point> visited = new ArrayList<Point>();
 		boolean canUseStone = currBehaviour.canUseStone();
 		pq.add(currState);
+		// Check that the point to reach is not out of bounds
+		if (goal.x > 160 || goal.x < 0) return null;
+		if (goal.y > 160 || goal.y < 0) return null;
 		
 		// Used to identify if a behaviour is the GetGold behaviour
 		// If it is GetGold, then the search cannot freely pass unexplored tiles
@@ -312,7 +315,7 @@ public class Graph {
 		// as empty tiles which could lead to agent to not get the gold if that tile is something
 		// it cannot bypass such as water
 		boolean getGold = false;
-		if (map[goal.y][goal.x] == Tile.Gold) getGold = true;
+		if (map[goal.y][goal.x] == Tile.Gold || Tile.isItem(map[goal.y][goal.x])) getGold = true;
 		
 		while (true) {
 			if (pq.size() == 0) {
@@ -321,6 +324,7 @@ public class Graph {
 			}
 			currState = pq.poll();
 			currentNode = currState.getPos();
+			// Clone the inventory of the state as it will be used multiple times
 			invClone = currState.getInv();
 			// Check if state has been visited
 			if (tileVisited(visited, currentNode)) continue;
@@ -332,50 +336,34 @@ public class Graph {
 			if (currentNode.x > 160 || currentNode.y > 160) continue;
 			if (currentNode.x < 0 || currentNode.y < 0) continue;
 			
-			ArrayList<Tile> tempInv = deepClone(invClone);
-			
 			// Tile above
+			ArrayList<Tile> tempInv = deepClone(invClone);
 			tempPoint = new Point(currentNode.x, currentNode.y + 1);
-			if (canPassTile(tempPoint, canUseStone, tempInv, getGold)) {
-				if (map[currentNode.y+1][currentNode.x] == Tile.Water && tempInv.contains(Tile.StepStone)) {
-					tempInv.remove(Tile.StepStone);
-				}
+			if (this.addStateToQueue(tempPoint, canUseStone, tempInv, getGold)) {
 				pq.add(new State(currState, Direction.NORTH, tempPoint,
 						currBehaviour, this, tempInv, goal));
 			}
 			
-			tempInv = deepClone(invClone);
-			
 			// Tile Below
+			tempInv = deepClone(invClone);
 			tempPoint = new Point(currentNode.x, currentNode.y - 1);
-			if (canPassTile(tempPoint, canUseStone, tempInv, getGold)) {
-				if (map[currentNode.y-1][currentNode.x] == Tile.Water && tempInv.contains(Tile.StepStone)) {
-					tempInv.remove(Tile.StepStone);
-				}
+			if (this.addStateToQueue(tempPoint, canUseStone, tempInv, getGold)) {
 				pq.add(new State(currState, Direction.SOUTH, tempPoint,
 						currBehaviour, this, tempInv, goal));
 			}
 			
-			tempInv = deepClone(invClone);
-			
 			// Tile Left
+			tempInv = deepClone(invClone);
 			tempPoint = new Point(currentNode.x - 1, currentNode.y);
-			if (canPassTile(tempPoint, canUseStone, tempInv, getGold)) {
-				if (map[currentNode.y][currentNode.x-1] == Tile.Water && tempInv.contains(Tile.StepStone)) {
-					tempInv.remove(Tile.StepStone);
-				}
+			if (this.addStateToQueue(tempPoint, canUseStone, tempInv, getGold)) {
 				pq.add(new State(currState, Direction.WEST, tempPoint,
 						currBehaviour, this, tempInv, goal));
 			}
 			
-			tempInv = deepClone(invClone);
-			
 			// Tile Right
+			tempInv = deepClone(invClone);
 			tempPoint = new Point(currentNode.x + 1, currentNode.y);
-			if (canPassTile(tempPoint, canUseStone, tempInv, getGold)) {
-				if (map[currentNode.y][currentNode.x+1] == Tile.Water && tempInv.contains(Tile.StepStone)) {
-					tempInv.remove(Tile.StepStone);
-				}
+			if (this.addStateToQueue(tempPoint, canUseStone, tempInv, getGold)) {
 				pq.add(new State(currState, Direction.EAST, tempPoint,
 						currBehaviour, this, tempInv, goal));
 			}
@@ -385,13 +373,38 @@ public class Graph {
 			if (iterations == 5000) break;
 		}
 		
-		currState.printPath();
+		//currState.printPath();
 		Queue<Move> path = currState.getPath();
+		// Create a list of items to reach the gold
+		if (currBehaviour.getBehaviour().equals("GetGold")) {
+			itemsRequired = getItemsToReachGold(path, this.currPos);
+		}
 		// Remove the state that was used to begin the search. It was only temporary to begin with
 		// and it has no value in terms of being in the path to the goal as it can lead the agent to lose the game.
 		path.remove();
 		
 		return (iterations == 5000) ? null : path;
+	}
+	
+	public ArrayList<Tile> getItemsRequired() {
+		return itemsRequired;
+	}
+	
+	/**
+	 * Determines if a state will be added to the pq or not depending on a variety of factors 
+	 */
+	private boolean addStateToQueue(Point tempPoint, boolean canUseStone, ArrayList<Tile> tempInv, boolean getGold) {
+		if (canPassTile(tempPoint, canUseStone, tempInv, getGold)) {
+			if (map[tempPoint.y][tempPoint.x] != Tile.Water) {
+				return true;
+			} else if (map[tempPoint.y][tempPoint.x] == Tile.Water && tempInv.contains(Tile.StepStone)) {
+				tempInv.remove(Tile.StepStone);
+				return true;
+			} else {
+				return false;
+			}
+		}
+		return false;
 	}
 	
 	/**
@@ -422,13 +435,23 @@ public class Graph {
 					currPoint.translate(-1, 0);
 					break;
 			}
-			if (Tile.isObstacle(map[currPoint.y][currPoint.x]))
-				requiredItems.add(map[currPoint.y][currPoint.x]);
+			// Determine which item is required to bypass the obstacle and add it to the list
+			switch (map[currPoint.y][currPoint.x]) {
+			case Water:
+				requiredItems.add(Tile.StepStone);
+				break;
+			case Tree:
+				if (!requiredItems.contains(Tile.Axe)) requiredItems.add(Tile.Axe);
+				break;
+			case Door:
+				if (!requiredItems.contains(Tile.Key)) requiredItems.add(Tile.Key);
+				break;
+			}
 		}
 		
 		return requiredItems;
 	}
-	
+		
 	public ArrayList<Tile> itemsStillRequiredForTravel(Queue<Move> path, Point startPos) {
 		ArrayList<Tile> items = getItemsToReachGold(path, startPos);
 		ArrayList<Tile> itemsLeft = deepClone(items);
@@ -437,22 +460,20 @@ public class Graph {
 		
 		for (Tile item: items) {
 			if (item == Tile.Water && inventory.contains(Tile.StepStone)) {
-				usingStone = true;
 				itemsLeft.remove(item);
 				inventory.remove(Tile.StepStone);
+				usingStone = true;
 			}
 			else if (item == Tile.Door && inventory.contains(Tile.Key))
 				itemsLeft.remove(item);
 			else if (item == Tile.Tree && inventory.contains(Tile.Axe))
 				itemsLeft.remove(item);
-			else if (item == Tile.Unexplored && !usingStone) {
+			else if (item == Tile.Unexplored && !usingStone)
 				itemsLeft.remove(item);
-			}
 		}
 		
 		return itemsLeft;
 	}
-	
 	
 	/**
 	 * Creates a deep copy of the inventory list passed in
@@ -530,11 +551,11 @@ public class Graph {
 			    return playerInv.contains(Tile.Key);
 			case Water:
 				if (!canUseStone) return false;
-				//if (itemsStillRequiredForTravel(m, playerPos).isEmpty()) return true;
 				return playerInv.contains(Tile.StepStone);
 			case Wall:
 				return false;
 			case Unexplored:
+				if (getGold == true) return false;
 				return true;
 			case Tree:
 				return playerInv.contains(Tile.Axe);

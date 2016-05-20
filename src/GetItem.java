@@ -6,11 +6,13 @@ public class GetItem implements Behaviour{
 	private Graph map;
 	private ArrayList<Tile> inventory;
 	private Point itemPos;
+	private boolean canUseStone;
 	
-	public GetItem(Graph map, ArrayList<Tile> inv, Point itemPos) {
+	public GetItem(Graph map, ArrayList<Tile> inv, Point itemPos, boolean canUseStone) {
 		this.map = map;
 		this.inventory = inv;
 		this.itemPos = itemPos;
+		this.canUseStone = canUseStone;
 	}
 	
 	@Override
@@ -26,6 +28,11 @@ public class GetItem implements Behaviour{
 	
 	@Override 
 	public boolean canUseStone() {
-		return true;
+		return canUseStone;
+	}
+
+	@Override
+	public String getBehaviour() {
+		return "GetItem";
 	}
 }
