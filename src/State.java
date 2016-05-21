@@ -9,14 +9,16 @@ public class State implements Comparable<State>{
 	private Point goalNode;
 	private int hCost;
 	private ArrayList<Tile> inventory;
+	private boolean usesStone;
 	
 	private static final int impassableCost = Integer.MAX_VALUE - 0xffffff;
 	
-	public State(State ps, Direction d, Point p, Behaviour b, Graph map, ArrayList<Tile> inventory, Point goal) {
+	public State(State ps, Direction d, Point p, Behaviour b, Graph map, ArrayList<Tile> inventory, Point goal, boolean usesStone) {
 		this.prevState = ps;
 		this.currDirection = d;
 		this.pos = p;	
 		this.inventory = inventory;
+		this.usesStone = usesStone;
 		
 		calculateHeuristic(b, map, inventory, goal);
 	}
@@ -45,7 +47,11 @@ public class State implements Comparable<State>{
 		case Door:
 			gCost = (inventory.contains(Tile.Key)) ? 2 : impassableCost; break;
 		case Water:
-			gCost = (inventory.contains(Tile.StepStone)) ? 2 : impassableCost; break;
+			gCost = (inventory.contains(Tile.StepStone)) ? 2 : impassableCost;
+			usesStone = true;
+			break;
+		case Unexplored:
+			gCost = 3; break;
 		default:
 			gCost = 1; break;
 		}	
@@ -105,6 +111,11 @@ public class State implements Comparable<State>{
 	public Point getPos() {
 		return pos;
 	}
+	
+	public boolean getStoneUsage() {
+		return usesStone;
+	}
+	
 	
 	public ArrayList<Tile> getInv() {
 		return inventory;
