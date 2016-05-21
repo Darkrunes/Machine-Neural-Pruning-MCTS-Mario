@@ -155,78 +155,78 @@ public class Agent {
 	 */
 	private Move exploreRandomDirection() {
 		Move m;
-		System.out.println("Random search");
 		Random rand = new Random();
 		Point toExplore = new Point();
 		toExplore.x = 0xFFFFFF;
 		toExplore.y = 0xFFFFFF;
-		while (toExplore.x == 0xFFFFFF && toExplore.y == 0xFFFFFF) {
-			int randomInt = rand.nextInt(6); 
-			System.out.println("Rand: " + randomInt);
-			int maxTiles = 10;
-			int offset = 5;
-			switch (randomInt) {
-			// Exploring to some point to right of the map
-			case 0:
-				toExplore.x = map.getExploredHigh().x + rand.nextInt(maxTiles) + offset;
-				toExplore.y = map.getExploredHigh().y;
-				break;
-			// Exploring to some point to left of the map
-			case 1:
-				toExplore.x = map.getExploredHigh().x - rand.nextInt(maxTiles) - offset;
-				toExplore.y = map.getExploredHigh().y;
-				break;
-			// Exploring to some point to top of the map
-			case 2:
-				toExplore.x = map.getExploredHigh().x;
-				toExplore.y = map.getExploredHigh().y + rand.nextInt(maxTiles) + offset;
-				break;
-			// Exploring to some point to bottom of the map
-			case 3:
-				toExplore.x = map.getExploredHigh().x;
-				toExplore.y = map.getExploredHigh().y - rand.nextInt(maxTiles) - offset;
-				break;
-			// Exploring to some point in top right of the map
-			case 4:
-				System.out.println("Exploring upper");
-				toExplore.x = map.getExploredHigh().x + rand.nextInt(maxTiles) + offset;
-				toExplore.y = map.getExploredHigh().y + rand.nextInt(maxTiles) + offset;
-				break;
-			// Exploring to some point in the bottom left of the map
-			case 5:
-				System.out.println("Exploring lower");
-				toExplore.x = map.getExploredHigh().x - rand.nextInt(maxTiles) - offset;
-				toExplore.y = map.getExploredHigh().y - rand.nextInt(maxTiles) - offset;
-				break;
-			// Exploring to some point within the current boundaries explored
-			default:
-				Point withinBoundary = map.getUnexplored();
-				if (withinBoundary == null) break;
-				toExplore.x = withinBoundary.x;
-				toExplore.y = withinBoundary.y;
-				System.out.println("Exploring within");
-				break;
-			}
+		int randomInt = rand.nextInt(6); 
+		int maxTiles = 10;
+		int offset = 5;
+		// Choose a direction to explore in
+		switch (randomInt) {
+		// Exploring to some point to right of the map
+		case 0:
+			toExplore.x = map.getExploredHigh().x + rand.nextInt(maxTiles) + offset;
+			toExplore.y = map.getExploredHigh().y;
+			break;
+		// Exploring to some point to left of the map
+		case 1:
+			toExplore.x = map.getExploredHigh().x - rand.nextInt(maxTiles) - offset;
+			toExplore.y = map.getExploredHigh().y;
+			break;
+		// Exploring to some point to top of the map
+		case 2:
+			toExplore.x = map.getExploredHigh().x;
+			toExplore.y = map.getExploredHigh().y + rand.nextInt(maxTiles) + offset;
+			break;
+		// Exploring to some point to bottom of the map
+		case 3:
+			toExplore.x = map.getExploredHigh().x;
+			toExplore.y = map.getExploredHigh().y - rand.nextInt(maxTiles) - offset;
+			break;
+		// Exploring to some point in top right of the map
+		case 4:
+			toExplore.x = map.getExploredHigh().x + rand.nextInt(maxTiles) + offset;
+			toExplore.y = map.getExploredHigh().y + rand.nextInt(maxTiles) + offset;
+			break;
+		// Exploring to some point in the bottom left of the map
+		case 5:
+			toExplore.x = map.getExploredHigh().x - rand.nextInt(maxTiles) - offset;
+			toExplore.y = map.getExploredHigh().y - rand.nextInt(maxTiles) - offset;
+			break;
+		// Exploring to some point within the current boundaries explored
+		default:
+			Point withinBoundary = map.getUnexplored();
+			if (withinBoundary == null) break;
+			toExplore.x = withinBoundary.x;
+			toExplore.y = withinBoundary.y;
+			break;
 		}
-		System.out.printf("Exploring to point (%d,%d)\n", toExplore.x, toExplore.y);
+		// Attempt to find a path to the point we want to explore
 		currBehaviour = new Explore(map, inventory, toExplore);
 		exploreQueue = map.astar(currBehaviour, currDirection);
 		if (exploreQueue != null) {
 			m = exploreQueue.poll();
 			if (m != null && map.isValidMove(m.d, currBehaviour.canUseStone())) return m;
 		} else {
+			// Reset the exploreQueue since no path was found
 			exploreQueue = new LinkedList<Move>();
 		}
 		return null;
 	}
 	
+	/**
+	 * Determine which action the agent should take next and send the action to the server
+	 * @param view 5 x 5 that the server provides the agent each turn
+	 * @return The action that the agent would like to take
+	 */
 	public char get_action( char view[][] ) {
 		// Initialise the map in the first turn
 		if (!mapInitialised) {
 			map.initialiseMap(view);
 			mapInitialised = true;
 		} 
-		// Update the map or change directions 
+		// Update the map or change the direction the agent is facing depending on the last action taken
 		switch (lastAction) {
 			case 'f':
 				map.updateMap(view[0], currDirection);
@@ -236,7 +236,6 @@ public class Agent {
 			case 'l':
 			case 'r':
 				currDirection = currDirection.changeDirection(lastAction);
-				System.out.println("Now facing direction: " + currDirection.charVal);
 				break;
 		}
 		// Show the map the agent knows of so far
@@ -244,26 +243,14 @@ public class Agent {
 		System.out.println("+-----------------------+");
 		print_view(view);
 		System.out.println("+-----------------------+");
-		
-		// Slow down the agent so we can debug
-		//createDelay(250);
-		//map.printInventory();
+		// Get a move to perform depending on the behaviour that the agent will have
 		Move m = decideBehaviours();
 		if (m != null) {
+			// Filter the move from a direction into an action
 			lastAction = filterOutput(m, view);
-			//System.out.println("Behaviour = " + currBehaviour.toString());
-			//System.out.println("Can use stone? " + currBehaviour.canUseStone());
 			return lastAction;
 		} 
 		return 0;
-	}
-	
-	private void createDelay(int delay) {
-		try {
-		    Thread.sleep(delay);                
-		} catch(InterruptedException e) {
-		    Thread.currentThread().interrupt();
-		}
 	}
 
 	/**
