@@ -5,6 +5,37 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.*;
 
+/**
+ * COMP3411 16s1 Assignment 3: Stepping
+ * Description: Write an agent to play a simple text based game in which a rectangular map is navigated
+ * and items are obtained to pass obstacles to reach the gold and return to the starting position. 
+ * 
+ * Group number: 13
+ * @author Saffat Shams Akanda (z5061498), Richard Luong (z5061456)
+ * 
+ * Answer to the question:
+ * Our program works by having the Agent perform an series of actions to accomplish a specific goal
+ * which is determined by the behaviour that the agent is currently utilising. The behaviour used is purely 
+ * chosen on whether there is a path to the gold or an item based on the agent's knowledge of the map so far.
+ * 
+ * Behaviours (Ordered based on priority):
+ * - GetGold: Goal is to pick up the gold and then head back to the starting position
+ * 	> Constraint 1: Cannot blindly return a path to the gold which contains unexplored tiles in it
+ *  > Constraint 2: The agent can only travel on the path if it has the required items to bypass any obstacles in the way 
+ * - GetItem: Goal is to pick up the specified item
+ * - Explore: Goal is to explore the map up to the specified point
+ *  > Constraint: Cannot use a stepping stone while exploring
+ *
+ * Algorithms:
+ * - Flood fill exploration: Used to allow the map to be explored in a manner similar to depth first search to maximise 
+ *	 the ratio of moves to tiles explored initially.
+ * - A* search: Used to find an optimal path to the goal of the current behaviour using the Manhattan distance 
+ *
+ * Data structures used:
+ * - Map: 2D array of 161 by 161 Tiles. The maximum map size is 80 x 80 so using an array is used for O(1) access
+ * - Visited points on the map: Hashmap using the coordinates converted into a string as a key. Used for O(1) access
+ * - A stack is used for storing points to explore for customised flood fill algorithm
+ */
 public class Agent {
 	private Graph map;
 	private Direction currDirection;
