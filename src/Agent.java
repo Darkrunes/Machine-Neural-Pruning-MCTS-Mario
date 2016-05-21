@@ -5,6 +5,37 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.*;
 
+/**
+ * COMP3411 16s1 Assignment 3: Stepping
+ * Description: Write an agent to play a simple text based game in which a rectangular map is navigated
+ * and items are obtained to pass obstacles to reach the gold and return to the starting position. 
+ * 
+ * Group number: 13
+ * @author Saffat Shams Akanda (z5061498), Richard Luong (z5061456)
+ * 
+ * Answer to the question:
+ * Our program works by having the Agent perform an series of actions to accomplish a specific goal
+ * which is determined by the behaviour that the agent is currently utilising. The behaviour used is purely 
+ * chosen on whether there is a path to the gold or an item based on the agent's knowledge of the map so far.
+ * 
+ * Behaviours (Ordered based on priority):
+ * - GetGold: Goal is to pick up the gold and then head back to the starting position
+ * 	> Constraint 1: Cannot blindly return a path to the gold which contains unexplored tiles in it
+ *  > Constraint 2: The agent can only travel on the path if it has the required items to bypass any obstacles in the way 
+ * - GetItem: Goal is to pick up the specified item
+ * - Explore: Goal is to explore the map up to the specified point
+ *  > Constraint: Cannot use a stepping stone while exploring
+ *
+ * Algorithms:
+ * - Flood fill exploration: Used to allow the map to be explored in a manner similar to depth first search to maximise 
+ *	 the ratio of moves to tiles explored initially.
+ * - A* search: Used to find an optimal path to the goal of the current behaviour using the Manhattan distance 
+ *
+ * Data structures used:
+ * - Map: 2D array of 161 by 161 Tiles. The maximum map size is 80 x 80 so using an array is used for O(1) access
+ * - Visited points on the map: Hashmap using the coordinates converted into a string as a key. Used for O(1) access
+ * - A stack is used for storing points to explore for customised flood fill algorithm
+ */
 public class Agent {
 	private Graph map;
 	private Direction currDirection;
@@ -17,6 +48,10 @@ public class Agent {
 	private Behaviour currBehaviour;
 	private boolean goldFound;
 	private Move lastMove;
+<<<<<<< HEAD
+	private Queue<Move> prevPathGold;
+=======
+>>>>>>> master
 	
 	/**
 	 * Constructor
@@ -31,6 +66,7 @@ public class Agent {
 		inventory = new ArrayList<Tile>();
 		mapInitialised = false;
 		exploreQueue = new LinkedList<Move>();
+		prevPathGold = new LinkedList<Move>();
 		goldFound = false;
 		lastMove = null;
 	}
@@ -54,12 +90,20 @@ public class Agent {
 		if (exploreQueue.size() > 0 && currBehaviour.getBehaviour() == "Explore") {
 			// Reset the behaviour to explore so that the agent can't cross water when exploring
 			currBehaviour = new Explore(null, null, null);
+<<<<<<< HEAD
+			//System.out.println("On previous exploration");
+=======
 			System.out.println("On previous exploration");
+>>>>>>> master
 			m = exploreQueue.poll();
 			if (map.isValidMove(m.d, currBehaviour.canUseStone())) return m;
 			exploreQueue = new LinkedList<Move>();
 		} else {
+<<<<<<< HEAD
+			//System.out.println("Going to start exploration!");
+=======
 			System.out.println("Going to start exploration!");
+>>>>>>> master
 			m = exploreUnvisited();
 			if (m != null) return m;
 			m = exploreRandomDirection();
@@ -81,10 +125,28 @@ public class Agent {
 	 */
 	private Move goldCollection() {
 		if (map.itemSeen(Tile.Gold) || map.holdingItem(Tile.Gold)) {
+			// If the path exists and it requires no additional items use it
+			if (prevPathGold.size() != 0 && map.itemsStillRequiredForTravel(prevPathGold, pos).isEmpty()) {
+				// Checks if the next move is valid
+				if (map.isValidMove(prevPathGold.peek().d, currBehaviour.canUseStone())) {
+					// If not facing the direction preserve the queue, as the agent has to rotate
+					if (currDirection != prevPathGold.peek().d)
+						return prevPathGold.peek();
+					else
+						return prevPathGold.poll();
+				}
+			}
 			currBehaviour = new GetGold(map, inventory, startPos);
 			Queue<Move> moves = map.astar(currBehaviour, currDirection);
-			if (moves != null)
+			if (moves != null) {
+				// If the current path requires no additional items save it to be reused
+				if (map.itemsStillRequiredForTravel(moves, pos).isEmpty())
+					prevPathGold = moves;
 				return moves.poll();	
+<<<<<<< HEAD
+			}
+=======
+>>>>>>> master
 		}
 		return null;
 	}
@@ -96,19 +158,19 @@ public class Agent {
 	 */
 	private Move itemCollection() {
 		if (map.itemSeen(Tile.StepStone)) {
-			boolean canUseStone = false;
+			boolean canUseStone = true;
 			currBehaviour = new GetItem(map, inventory, map.getItemPos(Tile.StepStone), canUseStone);
 			Queue<Move> moves = map.astar(currBehaviour, currDirection);
 			if (moves != null) return moves.poll();	
 		}
 		if (map.itemSeen(Tile.Key) && !map.holdingItem(Tile.Key)) {
-			boolean canUseStone = false;
+			boolean canUseStone = true;
 			currBehaviour = new GetItem(map, inventory, map.getItemPos(Tile.Key), canUseStone);
 			Queue<Move> moves = map.astar(currBehaviour, currDirection);
 			if (moves != null) return moves.poll();	
 		}
 		if (map.itemSeen(Tile.Axe) && !map.holdingItem(Tile.Axe)) {
-			boolean canUseStone = false;
+			boolean canUseStone = true;
 			currBehaviour = new GetItem(map, inventory, map.getItemPos(Tile.Axe), canUseStone);
 			Queue<Move> moves = map.astar(currBehaviour, currDirection);
 			if (moves != null) return moves.poll();	
@@ -142,11 +204,60 @@ public class Agent {
 	 */
 	private Move exploreRandomDirection() {
 		Move m;
+<<<<<<< HEAD
+=======
 		System.out.println("Random search");
+>>>>>>> master
 		Random rand = new Random();
 		Point toExplore = new Point();
 		toExplore.x = 0xFFFFFF;
 		toExplore.y = 0xFFFFFF;
+<<<<<<< HEAD
+		int randomInt = rand.nextInt(6); 
+		int maxTiles = 10;
+		int offset = 5;
+		// Choose a direction to explore in
+		switch (randomInt) {
+		// Exploring to some point to right of the map
+		case 0:
+			toExplore.x = map.getExploredHigh().x + rand.nextInt(maxTiles) + offset;
+			toExplore.y = map.getExploredHigh().y;
+			break;
+		// Exploring to some point to left of the map
+		case 1:
+			toExplore.x = map.getExploredHigh().x - rand.nextInt(maxTiles) - offset;
+			toExplore.y = map.getExploredHigh().y;
+			break;
+		// Exploring to some point to top of the map
+		case 2:
+			toExplore.x = map.getExploredHigh().x;
+			toExplore.y = map.getExploredHigh().y + rand.nextInt(maxTiles) + offset;
+			break;
+		// Exploring to some point to bottom of the map
+		case 3:
+			toExplore.x = map.getExploredHigh().x;
+			toExplore.y = map.getExploredHigh().y - rand.nextInt(maxTiles) - offset;
+			break;
+		// Exploring to some point in top right of the map
+		case 4:
+			toExplore.x = map.getExploredHigh().x + rand.nextInt(maxTiles) + offset;
+			toExplore.y = map.getExploredHigh().y + rand.nextInt(maxTiles) + offset;
+			break;
+		// Exploring to some point in the bottom left of the map
+		case 5:
+			toExplore.x = map.getExploredHigh().x - rand.nextInt(maxTiles) - offset;
+			toExplore.y = map.getExploredHigh().y - rand.nextInt(maxTiles) - offset;
+			break;
+		// Exploring to some point within the current boundaries explored
+		default:
+			Point withinBoundary = map.getUnexplored();
+			if (withinBoundary == null) break;
+			toExplore.x = withinBoundary.x;
+			toExplore.y = withinBoundary.y;
+			break;
+		}
+		// Attempt to find a path to the point we want to explore
+=======
 		while (toExplore.x == 0xFFFFFF && toExplore.y == 0xFFFFFF) {
 			int randomInt = rand.nextInt(6); 
 			System.out.println("Rand: " + randomInt);
@@ -196,24 +307,34 @@ public class Agent {
 			}
 		}
 		System.out.printf("Exploring to point (%d,%d)\n", toExplore.x, toExplore.y);
+>>>>>>> master
 		currBehaviour = new Explore(map, inventory, toExplore);
 		exploreQueue = map.astar(currBehaviour, currDirection);
 		if (exploreQueue != null) {
 			m = exploreQueue.poll();
 			if (m != null && map.isValidMove(m.d, currBehaviour.canUseStone())) return m;
 		} else {
+<<<<<<< HEAD
+			// Reset the exploreQueue since no path was found
+=======
+>>>>>>> master
 			exploreQueue = new LinkedList<Move>();
 		}
 		return null;
 	}
 	
+	/**
+	 * Determine which action the agent should take next and send the action to the server
+	 * @param view 5 x 5 that the server provides the agent each turn
+	 * @return The action that the agent would like to take
+	 */
 	public char get_action( char view[][] ) {
 		// Initialise the map in the first turn
 		if (!mapInitialised) {
 			map.initialiseMap(view);
 			mapInitialised = true;
 		} 
-		// Update the map or change directions 
+		// Update the map or change the direction the agent is facing depending on the last action taken
 		switch (lastAction) {
 			case 'f':
 				map.updateMap(view[0], currDirection);
@@ -223,10 +344,16 @@ public class Agent {
 			case 'l':
 			case 'r':
 				currDirection = currDirection.changeDirection(lastAction);
-				System.out.println("Now facing direction: " + currDirection.charVal);
 				break;
 		}
 		// Show the map the agent knows of so far
+<<<<<<< HEAD
+		//map.displayMap();
+		//System.out.println("+-----------------------+");
+		//print_view(view);
+		//System.out.println("+-----------------------+");
+		// Get a move to perform depending on the behaviour that the agent will have
+=======
 		map.displayMap();
 		System.out.println("+-----------------------+");
 		print_view(view);
@@ -235,22 +362,14 @@ public class Agent {
 		// Slow down the agent so we can debug
 		//createDelay(250);
 		//map.printInventory();
+>>>>>>> master
 		Move m = decideBehaviours();
 		if (m != null) {
+			// Filter the move from a direction into an action
 			lastAction = filterOutput(m, view);
-			//System.out.println("Behaviour = " + currBehaviour.toString());
-			//System.out.println("Can use stone? " + currBehaviour.canUseStone());
 			return lastAction;
 		} 
 		return 0;
-	}
-	
-	private void createDelay(int delay) {
-		try {
-		    Thread.sleep(delay);                
-		} catch(InterruptedException e) {
-		    Thread.currentThread().interrupt();
-		}
 	}
 
 	/**
