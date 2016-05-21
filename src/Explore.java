@@ -24,10 +24,7 @@ public class Explore implements Behaviour{
 	}
 	
 	/**
-	 * Returns the goal node for the player,
-	 * Tells the player the location of the gold if it has been found,
-	 * starting location if it has the gold,
-	 * otherwise null
+	 * Return the coordinates of the tile that the agent wants to explore to
 	 */
 	@Override
 	public Point getGoal() {
