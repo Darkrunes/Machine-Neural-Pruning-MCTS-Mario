@@ -108,7 +108,7 @@ public class Graph {
 		case WEST:
 			return canPassTile(new Point(currPos.x - 1, currPos.y), canUseStone, playerInv, false, false);
 		}
-		System.out.println("Invalid move detected");
+		//System.out.println("Invalid move detected");
 		return false;
 	}
 	
@@ -267,7 +267,7 @@ public class Graph {
 		}
 		// Remove the item from the map and add it to the player's inventory
 		if (toRemove != null) {
-			System.out.println("Item " + toRemove.getItemName().charVal + " removed from map");
+			//System.out.println("Item " + toRemove.getItemName().charVal + " removed from map");
 			itemsOnMap.remove(toRemove);
 		}
 	}
@@ -341,7 +341,7 @@ public class Graph {
 	 * @return Popped point from the exploreStack
 	 */
 	public Point getUnvisitedPoint() {
-		System.out.println("Queue size: " + exploreStack.size());
+		//System.out.println("Queue size: " + exploreStack.size());
 		if (exploreStack.size() == 0) return null; 
 		return exploreStack.pop();
 	}
@@ -423,7 +423,7 @@ public class Graph {
 		// as empty tiles which could lead to agent to not get the gold if that tile is something
 		// it cannot bypass such as water
 		boolean getGold = false;
-		System.out.printf("Goal at (%d, %d)\n", goal.x, goal.y);
+		//System.out.printf("Goal at (%d, %d)\n", goal.x, goal.y);
 		if (map[goal.y][goal.x] == Tile.Gold || Tile.isItem(map[goal.y][goal.x])) getGold = true;
 		
 		while (true) {
@@ -734,15 +734,15 @@ public class Graph {
 	 * Prints out the Agent's inventory
 	 */
 	public void printInventory() {
-		System.out.println("\n-------------\nInventory:");
-		System.out.println("Axe: " + playerInv.contains(Tile.Axe));
-		int stepStones = 0;
-		for (int i = 0; i < playerInv.size(); i++) {
-			if (playerInv.get(i) == Tile.StepStone) stepStones += 1;
-		}
-		System.out.println("Step stone: " + stepStones);
-		System.out.println("Key: " + playerInv.contains(Tile.Key));
-		System.out.println("---------------");
+		//System.out.println("\n-------------\nInventory:");
+		//System.out.println("Axe: " + playerInv.contains(Tile.Axe));
+		//int stepStones = 0;
+		//for (int i = 0; i < playerInv.size(); i++) {
+		//	if (playerInv.get(i) == Tile.StepStone) stepStones += 1;
+		//}
+		//System.out.println("Step stone: " + stepStones);
+		//System.out.println("Key: " + playerInv.contains(Tile.Key));
+		//System.out.println("---------------");
 	}
 	
 	/**

@@ -56,12 +56,12 @@ public class Agent {
 		if (exploreQueue.size() > 0 && currBehaviour.getBehaviour() == "Explore") {
 			// Reset the behaviour to explore so that the agent can't cross water when exploring
 			currBehaviour = new Explore(null, null, null);
-			System.out.println("On previous exploration");
+			//System.out.println("On previous exploration");
 			m = exploreQueue.poll();
 			if (map.isValidMove(m.d, currBehaviour.canUseStone())) return m;
 			exploreQueue = new LinkedList<Move>();
 		} else {
-			System.out.println("Going to start exploration!");
+			//System.out.println("Going to start exploration!");
 			m = exploreUnvisited();
 			if (m != null) return m;
 			m = exploreRandomDirection();
@@ -243,10 +243,10 @@ public class Agent {
 				break;
 		}
 		// Show the map the agent knows of so far
-		map.displayMap();
-		System.out.println("+-----------------------+");
-		print_view(view);
-		System.out.println("+-----------------------+");
+		//map.displayMap();
+		//System.out.println("+-----------------------+");
+		//print_view(view);
+		//System.out.println("+-----------------------+");
 		// Get a move to perform depending on the behaviour that the agent will have
 		Move m = decideBehaviours();
 		if (m != null) {
