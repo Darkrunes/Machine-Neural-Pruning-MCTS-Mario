@@ -341,11 +341,7 @@ public class Graph {
 	 * @return Popped point from the exploreStack
 	 */
 	public Point getUnvisitedPoint() {
-<<<<<<< HEAD
 		//System.out.println("Queue size: " + exploreStack.size());
-=======
-		System.out.println("Queue size: " + exploreStack.size());
->>>>>>> master
 		if (exploreStack.size() == 0) return null; 
 		return exploreStack.pop();
 	}
@@ -393,26 +389,6 @@ public class Graph {
 					exploreStack.push(new Point(currPos.x, currPos.y-1));
 			}
 		}
-<<<<<<< HEAD
-=======
-		/*
-		// Likes to cut down lots of trees
-		if (!pointVisited(currPos)) {
-			if (canPassTile(new Point(currPos.x-1, currPos.y), false, playerInv, false)) {
-				if (!pointVisited(new Point(currPos.x-1, currPos.y))) exploreStack.push(new Point(currPos.x-1, currPos.y));
-			}
-			if (canPassTile(new Point(currPos.x+1, currPos.y), false, playerInv, false)) {
-				if (!pointVisited(new Point(currPos.x+1, currPos.y))) exploreStack.push(new Point(currPos.x+1, currPos.y));
-			}
-			if (canPassTile(new Point(currPos.x, currPos.y+1), false, playerInv, false)) {
-				if (!pointVisited(new Point(currPos.x, currPos.y+1))) exploreStack.push(new Point(currPos.x, currPos.y+1));
-			}
-			if (canPassTile(new Point(currPos.x, currPos.y-1), false, playerInv, false)) {
-				if (!pointVisited(new Point(currPos.x, currPos.y-1))) exploreStack.push(new Point(currPos.x, currPos.y-1));
-			}
-		}
-		*/
->>>>>>> master
 	}
 	
 	// End of code for flood fill
@@ -447,11 +423,7 @@ public class Graph {
 		// as empty tiles which could lead to agent to not get the gold if that tile is something
 		// it cannot bypass such as water
 		boolean getGold = false;
-<<<<<<< HEAD
 		//System.out.printf("Goal at (%d, %d)\n", goal.x, goal.y);
-=======
-		System.out.printf("Goal at (%d, %d)\n", goal.x, goal.y);
->>>>>>> master
 		if (map[goal.y][goal.x] == Tile.Gold || Tile.isItem(map[goal.y][goal.x])) getGold = true;
 		
 		while (true) {
@@ -535,15 +507,9 @@ public class Graph {
 	 * @param usesStone				If the current path uses a stepping stone
 	 * @return						True/False depending on if the state can be added to the queue
 	 */
-<<<<<<< HEAD
 	private boolean addStateToQueue(Point tempPoint, boolean canUseStone, ArrayList<Tile> tempInv, boolean getGold, boolean usesStone) {
 		if (tempPoint.x >= 160 || tempPoint.y >= 160) return false;
 		if (canPassTile(tempPoint, canUseStone, tempInv, getGold, usesStone)) {
-=======
-	private boolean addStateToQueue(Point tempPoint, boolean canUseStone, ArrayList<Tile> tempInv, boolean getGold) {
-		if (tempPoint.x >= 160 || tempPoint.y >= 160) return false;
-		if (canPassTile(tempPoint, canUseStone, tempInv, getGold)) {
->>>>>>> master
 			if (map[tempPoint.y][tempPoint.x] != Tile.Water) {
 				return true;
 			} else if (map[tempPoint.y][tempPoint.x] == Tile.Water && tempInv.contains(Tile.StepStone)) {
@@ -708,14 +674,11 @@ public class Graph {
 		return map[y][x];
 	}
 	
-<<<<<<< HEAD
 	/**
 	 * Gets the location of a given tile
 	 * @param tile		Tile to be searched for
 	 * @return			Location of tile if it has been seen
 	 */
-=======
->>>>>>> master
 	public Point getLocationTile(Tile tile) {
 		for (int y = exploredHighBound.y; y >= exploredLowBound.y; y--) {
 			for (int x = exploredLowBound.x; x <= exploredHighBound.x; x++) {
@@ -727,13 +690,10 @@ public class Graph {
 		return null;
 	}
 	
-<<<<<<< HEAD
 	/**
 	 * Returns a random move
 	 * @return	A random move
 	 */
-=======
->>>>>>> master
 	public Move getRandomMove() {
 		Random rand = new Random();
 		Direction d = Direction.NONE;
