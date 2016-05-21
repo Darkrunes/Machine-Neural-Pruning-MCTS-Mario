@@ -48,10 +48,7 @@ public class Agent {
 	private Behaviour currBehaviour;
 	private boolean goldFound;
 	private Move lastMove;
-<<<<<<< HEAD
 	private Queue<Move> prevPathGold;
-=======
->>>>>>> master
 	
 	/**
 	 * Constructor
@@ -90,20 +87,12 @@ public class Agent {
 		if (exploreQueue.size() > 0 && currBehaviour.getBehaviour() == "Explore") {
 			// Reset the behaviour to explore so that the agent can't cross water when exploring
 			currBehaviour = new Explore(null, null, null);
-<<<<<<< HEAD
 			//System.out.println("On previous exploration");
-=======
-			System.out.println("On previous exploration");
->>>>>>> master
 			m = exploreQueue.poll();
 			if (map.isValidMove(m.d, currBehaviour.canUseStone())) return m;
 			exploreQueue = new LinkedList<Move>();
 		} else {
-<<<<<<< HEAD
 			//System.out.println("Going to start exploration!");
-=======
-			System.out.println("Going to start exploration!");
->>>>>>> master
 			m = exploreUnvisited();
 			if (m != null) return m;
 			m = exploreRandomDirection();
@@ -143,10 +132,7 @@ public class Agent {
 				if (map.itemsStillRequiredForTravel(moves, pos).isEmpty())
 					prevPathGold = moves;
 				return moves.poll();	
-<<<<<<< HEAD
 			}
-=======
->>>>>>> master
 		}
 		return null;
 	}
@@ -204,15 +190,10 @@ public class Agent {
 	 */
 	private Move exploreRandomDirection() {
 		Move m;
-<<<<<<< HEAD
-=======
-		System.out.println("Random search");
->>>>>>> master
 		Random rand = new Random();
 		Point toExplore = new Point();
 		toExplore.x = 0xFFFFFF;
 		toExplore.y = 0xFFFFFF;
-<<<<<<< HEAD
 		int randomInt = rand.nextInt(6); 
 		int maxTiles = 10;
 		int offset = 5;
@@ -257,67 +238,13 @@ public class Agent {
 			break;
 		}
 		// Attempt to find a path to the point we want to explore
-=======
-		while (toExplore.x == 0xFFFFFF && toExplore.y == 0xFFFFFF) {
-			int randomInt = rand.nextInt(6); 
-			System.out.println("Rand: " + randomInt);
-			int maxTiles = 10;
-			int offset = 5;
-			switch (randomInt) {
-			// Exploring to some point to right of the map
-			case 0:
-				toExplore.x = map.getExploredHigh().x + rand.nextInt(maxTiles) + offset;
-				toExplore.y = map.getExploredHigh().y;
-				break;
-			// Exploring to some point to left of the map
-			case 1:
-				toExplore.x = map.getExploredHigh().x - rand.nextInt(maxTiles) - offset;
-				toExplore.y = map.getExploredHigh().y;
-				break;
-			// Exploring to some point to top of the map
-			case 2:
-				toExplore.x = map.getExploredHigh().x;
-				toExplore.y = map.getExploredHigh().y + rand.nextInt(maxTiles) + offset;
-				break;
-			// Exploring to some point to bottom of the map
-			case 3:
-				toExplore.x = map.getExploredHigh().x;
-				toExplore.y = map.getExploredHigh().y - rand.nextInt(maxTiles) - offset;
-				break;
-			// Exploring to some point in top right of the map
-			case 4:
-				System.out.println("Exploring upper");
-				toExplore.x = map.getExploredHigh().x + rand.nextInt(maxTiles) + offset;
-				toExplore.y = map.getExploredHigh().y + rand.nextInt(maxTiles) + offset;
-				break;
-			// Exploring to some point in the bottom left of the map
-			case 5:
-				System.out.println("Exploring lower");
-				toExplore.x = map.getExploredHigh().x - rand.nextInt(maxTiles) - offset;
-				toExplore.y = map.getExploredHigh().y - rand.nextInt(maxTiles) - offset;
-				break;
-			// Exploring to some point within the current boundaries explored
-			default:
-				Point withinBoundary = map.getUnexplored();
-				if (withinBoundary == null) break;
-				toExplore.x = withinBoundary.x;
-				toExplore.y = withinBoundary.y;
-				System.out.println("Exploring within");
-				break;
-			}
-		}
-		System.out.printf("Exploring to point (%d,%d)\n", toExplore.x, toExplore.y);
->>>>>>> master
 		currBehaviour = new Explore(map, inventory, toExplore);
 		exploreQueue = map.astar(currBehaviour, currDirection);
 		if (exploreQueue != null) {
 			m = exploreQueue.poll();
 			if (m != null && map.isValidMove(m.d, currBehaviour.canUseStone())) return m;
 		} else {
-<<<<<<< HEAD
 			// Reset the exploreQueue since no path was found
-=======
->>>>>>> master
 			exploreQueue = new LinkedList<Move>();
 		}
 		return null;
@@ -347,22 +274,11 @@ public class Agent {
 				break;
 		}
 		// Show the map the agent knows of so far
-<<<<<<< HEAD
 		//map.displayMap();
 		//System.out.println("+-----------------------+");
 		//print_view(view);
 		//System.out.println("+-----------------------+");
 		// Get a move to perform depending on the behaviour that the agent will have
-=======
-		map.displayMap();
-		System.out.println("+-----------------------+");
-		print_view(view);
-		System.out.println("+-----------------------+");
-		
-		// Slow down the agent so we can debug
-		//createDelay(250);
-		//map.printInventory();
->>>>>>> master
 		Move m = decideBehaviours();
 		if (m != null) {
 			// Filter the move from a direction into an action
