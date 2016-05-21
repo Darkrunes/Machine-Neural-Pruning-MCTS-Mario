@@ -48,6 +48,11 @@ public enum Tile {
     	}
     }
     
+    /**
+     * Check if the given tile is an obstacle/ possible obstacle
+     * @param tile		Tile to be checked
+     * @return			Whether the tile is an obstacle
+     */
     public static boolean isObstacle(Tile tile) {
     	switch (tile) {
     	case Water:
