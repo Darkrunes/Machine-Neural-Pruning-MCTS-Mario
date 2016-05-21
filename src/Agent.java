@@ -83,8 +83,11 @@ public class Agent {
 	 */
 	private Move goldCollection() {
 		if (map.itemSeen(Tile.Gold) || map.holdingItem(Tile.Gold)) {
+			// If the path exists and it requires no additional items use it
 			if (prevPathGold.size() != 0 && map.itemsStillRequiredForTravel(prevPathGold, pos).isEmpty()) {
+				// Checks if the next move is valid
 				if (map.isValidMove(prevPathGold.peek().d, currBehaviour.canUseStone())) {
+					// If not facing the direction preserve the queue, as the agent has to rotate
 					if (currDirection != prevPathGold.peek().d)
 						return prevPathGold.peek();
 					else
@@ -94,6 +97,7 @@ public class Agent {
 			currBehaviour = new GetGold(map, inventory, startPos);
 			Queue<Move> moves = map.astar(currBehaviour, currDirection);
 			if (moves != null) {
+				// If the current path requires no additional items save it to be reused
 				if (map.itemsStillRequiredForTravel(moves, pos).isEmpty())
 					prevPathGold = moves;
 				return moves.poll();	
