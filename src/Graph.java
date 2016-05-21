@@ -1,6 +1,11 @@
 import java.awt.Point;
 import java.util.*;
 
+/**
+ * Graph data structure that handles creating and updating the map
+ * It also handles searches and path validation 
+ * @author Saffat Shams Akanda, Richard Luong
+ */
 public class Graph {
 	private Tile[][] map;
 	private ArrayList<Item> itemsOnMap;
@@ -89,6 +94,7 @@ public class Graph {
 	 * Returns true if the move the agent is going to make is valid (i.e. they are moving into a tile
 	 * which is either empty or contains an item)
 	 * @param currDirection The direction that the agent is going to move in
+	 * @param canUseStone	Whether or not the Agent is allowed to use a stone
 	 * @return true if the next move forward is valid
 	 */
 	public boolean isValidMove(Direction currDirection, boolean canUseStone) {
@@ -108,6 +114,7 @@ public class Graph {
 	
 	/**
 	 * Get a point within the current boundaries that the agent has gone to which has been unexplored
+	 * @return 		A point which has not been explored
 	 */
 	public Point getUnexplored() {
 		ArrayList<Point> unexploredList = new ArrayList<Point>();
@@ -246,6 +253,10 @@ public class Graph {
 		visitedPoints.put(key, currPos);
 	}
 	
+	/**
+	 * Given the point of an item removes it from the list of items currently on the map
+	 * @param pos		Position of item to be removed
+	 */
 	public void removeItemOnMap(Point pos) {
 		Item toRemove = null;
 		for (Item currItem: itemsOnMap) {
@@ -261,28 +272,51 @@ public class Graph {
 		}
 	}
 	
+	/**
+	 * Returns the player's current location
+	 * @return
+	 */
 	public Point getPlayerPos() {
 		return currPos;
 	}
 	
+	/**
+	 * Returns a list of items representing the player inventory
+	 * @return		ArrayList of the player's inventory
+	 */
 	public ArrayList<Tile> getItems() {
-		// SUUUUPER hacky change later
 		return playerInv;
 	}
 	
+	/**
+	 * Gets a list of the items currently seen on the map
+	 * @return		List of items seen so far
+	 */
 	public ArrayList<Item> itemsOnMap() {
-		// HACKY AS F REPLACE
 		return itemsOnMap;
 	}
 	
+	/**
+	 * Lowest locations on the map explored
+	 * @return		Lowest X/Y locations on the map explored
+	 */
 	public Point getExploredLow() {
 		return this.exploredLowBound;
 	}
 	
+	/**
+	 * Highest X/Y locations of the map that has been explored
+	 * @return		Highest X/Y locations on the map explored
+	 */
 	public Point getExploredHigh() {
 		return this.exploredHighBound;
 	}
 	
+	/**
+	 * Returns a boolean indicating if an item is currently present/been seen on the map
+	 * @param item		Item to be searched for
+	 * @return			Boolean indicating if the item is on the map
+	 */
 	public boolean itemSeen(Tile item) {
 		for (Item currItem: itemsOnMap) {
 			if (currItem.getItemName().equals(item)) return true;
@@ -290,6 +324,11 @@ public class Graph {
 		return false;
 	}
 	
+	/**
+	 * If the player's inventory contains an item
+	 * @param item			Item to be queried for
+	 * @return				True if the item is in the inventory
+	 */
 	public boolean holdingItem(Tile item) {
 		return (playerInv.contains(item)) ? true : false;
 	}
@@ -350,23 +389,6 @@ public class Graph {
 					exploreStack.push(new Point(currPos.x, currPos.y-1));
 			}
 		}
-		/*
-		// Likes to cut down lots of trees
-		if (!pointVisited(currPos)) {
-			if (canPassTile(new Point(currPos.x-1, currPos.y), false, playerInv, false)) {
-				if (!pointVisited(new Point(currPos.x-1, currPos.y))) exploreStack.push(new Point(currPos.x-1, currPos.y));
-			}
-			if (canPassTile(new Point(currPos.x+1, currPos.y), false, playerInv, false)) {
-				if (!pointVisited(new Point(currPos.x+1, currPos.y))) exploreStack.push(new Point(currPos.x+1, currPos.y));
-			}
-			if (canPassTile(new Point(currPos.x, currPos.y+1), false, playerInv, false)) {
-				if (!pointVisited(new Point(currPos.x, currPos.y+1))) exploreStack.push(new Point(currPos.x, currPos.y+1));
-			}
-			if (canPassTile(new Point(currPos.x, currPos.y-1), false, playerInv, false)) {
-				if (!pointVisited(new Point(currPos.x, currPos.y-1))) exploreStack.push(new Point(currPos.x, currPos.y-1));
-			}
-		}
-		*/
 	}
 	
 	// End of code for flood fill
@@ -455,12 +477,11 @@ public class Graph {
 						currBehaviour, this, tempInv, goal, currState.getStoneUsage()));
 			}
 			
-			// Hacky method to return null on no path
 			iterations++;
 			if (iterations == 5000) break;
 		}
 		
-		//currState.printPath();
+
 		Queue<Move> path = currState.getPath();
 		// Create a list of items to reach the gold
 		if (currBehaviour.getBehaviour().equals("GetGold")) {
@@ -478,7 +499,13 @@ public class Graph {
 	}
 	
 	/**
-	 * Determines if a state will be added to the pq or not depending on a variety of factors 
+	 *  Determines if a state will be added to the priority queue or not depending on a variety of factors 
+	 * @param tempPoint				Proposed Point
+	 * @param canUseStone			Whether or not the agent is allowed to use  Stepping Stones
+	 * @param tempInv				A copy of the player inventory
+	 * @param getGold				Whether or not the agent is searching for gold
+	 * @param usesStone				If the current path uses a stepping stone
+	 * @return						True/False depending on if the state can be added to the queue
 	 */
 	private boolean addStateToQueue(Point tempPoint, boolean canUseStone, ArrayList<Tile> tempInv, boolean getGold, boolean usesStone) {
 		if (tempPoint.x >= 160 || tempPoint.y >= 160) return false;
@@ -523,8 +550,10 @@ public class Graph {
 					currPoint.translate(-1, 0);
 					break;
 			}
-			// Determine which item is required to bypass the obstacle and add it to the list
+			// If the point is outside the map the path is invalid
 			if (currPoint.y >= 160 || currPoint.x >= 160) return null;
+
+			// Determine which item is required to bypass the obstacle and add it to the list
 			switch (map[currPoint.y][currPoint.x]) {
 			case Water:
 				requiredItems.add(Tile.StepStone);
@@ -542,21 +571,34 @@ public class Graph {
 		
 		return requiredItems;
 	}
-		
+	
+	/**
+	 * Returns a list of items still needed, also includes unexplored tiles.
+	 * If a path relies on only unexplored tiles it is an invalid path.
+	 * If a path relies on unexplored tiles after using a stepping stone it is again invalid.
+	 * @param path			Queue of Move representing the proposed path
+	 * @param startPos		Location of the Agent
+	 * @return				List of items/unexplored tiles, if not empty path cannot be completed
+	 */
 	public ArrayList<Tile> itemsStillRequiredForTravel(Queue<Move> path, Point startPos) {
 		ArrayList<Tile> items = getItemsToReachGold(path, startPos);
+		// If items to gold returns null the path is impossible to complete
 		if (items == null) {
 			items = new ArrayList<Tile>();
 			items.add(Tile.Unexplored);
 			return items;
 		}
+		
 		ArrayList<Tile> itemsLeft = deepClone(items);
 		ArrayList<Tile> inventory = deepClone(playerInv);
+		
 		int numUnexploredTiles = 0;
 		Tile first;
 		boolean allUnexplored = true;
 		boolean usingStone = false;
 		
+		// If the items/tiles left is not zero and is all Unexplored tiles
+		// return the list as invalid (not empty)
 		if (itemsLeft.size() > 1) {
 			first = itemsLeft.get(0);
 			if (first.equals(Tile.Unexplored)); {
@@ -570,6 +612,8 @@ public class Graph {
 			}
 		}
 		
+		// Iterate through the tiles and remove them if necessary items are possessed
+		// Unexplored tiles are not possible if a stepping stone is used
 		for (Tile item: items) {
 			if (item == Tile.Water && inventory.contains(Tile.StepStone)) {
 				itemsLeft.remove(item);
@@ -582,11 +626,6 @@ public class Graph {
 				itemsLeft.remove(item);
 			else if (item == Tile.Unexplored && !usingStone) {
 				itemsLeft.remove(item);
-				//numUnexploredTiles++;
-				//if (numUnexploredTiles > 5) {
-				//	itemsLeft.add(Tile.Unexplored);
-				//	return itemsLeft;
-				//}
 			}
 		}
 		
@@ -625,10 +664,21 @@ public class Graph {
 		return newInventory;
 	}
 	
+	/**
+	 * Returns the tile at an X/Y coord
+	 * @param x			X coordinate to be queried
+	 * @param y			Y coordinate to be queried
+	 * @return			Type of tile at the location
+	 */
 	public Tile getTileAt(int x, int y) {
 		return map[y][x];
 	}
 	
+	/**
+	 * Gets the location of a given tile
+	 * @param tile		Tile to be searched for
+	 * @return			Location of tile if it has been seen
+	 */
 	public Point getLocationTile(Tile tile) {
 		for (int y = exploredHighBound.y; y >= exploredLowBound.y; y--) {
 			for (int x = exploredLowBound.x; x <= exploredHighBound.x; x++) {
@@ -640,6 +690,10 @@ public class Graph {
 		return null;
 	}
 	
+	/**
+	 * Returns a random move
+	 * @return	A random move
+	 */
 	public Move getRandomMove() {
 		Random rand = new Random();
 		Direction d = Direction.NONE;
@@ -662,6 +716,11 @@ public class Graph {
 		return m;
 	}
 	
+	/**
+	 * Gets the location of a given item type
+	 * @param itemName			Type of item being searched for
+	 * @return					Location of the item if, it has been seen by the agent
+	 */
 	public Point getItemPos(Tile itemName) {
 		for (Item currItem: itemsOnMap) {
 			if (currItem.getItemName() == itemName) {
@@ -671,6 +730,9 @@ public class Graph {
 		return null;
 	}
 	
+	/**
+	 * Prints out the Agent's inventory
+	 */
 	public void printInventory() {
 		System.out.println("\n-------------\nInventory:");
 		System.out.println("Axe: " + playerInv.contains(Tile.Axe));
@@ -683,7 +745,17 @@ public class Graph {
 		System.out.println("---------------");
 	}
 	
-	
+	/**
+	 * Returns a boolean value indicating if the agent can pass a certain tile.
+	 * For normal obstacles they can be passed if the appropriate item is possessed
+	 * If the tile is unexplored it is not allowed if the agent is using the stone and trying to get to gold
+	 * @param p						Location of tile to be checked
+	 * @param canUseStone			If the agent is allowed to use stepping stones
+	 * @param playerInv				A copy of the player's current inventory
+	 * @param getGold				If the player is trying to get to gold
+	 * @param usesStone				Whether the path uses a stone
+	 * @return						Boolean indicating if the agent can pass throguh the tile
+	 */
 	private boolean canPassTile(Point p, boolean canUseStone, ArrayList<Tile> playerInv, boolean getGold, boolean usesStone) {
 		switch (map[p.y][p.x]) {
 			case Door:
@@ -703,6 +775,12 @@ public class Graph {
 		}
 	}
 	
+	/**
+	 * Returns a boolean indicating if the tile has been visited in the A* search
+	 * @param visited			List of points visited so far
+	 * @param pos				Current position
+	 * @return					Boolean indicating if the point is in the visited list
+	 */
 	private boolean tileVisited(ArrayList<Point> visited, Point pos) {
 		for (Point currPoint: visited) {
 			if (currPoint.x == pos.x && currPoint.y == pos.y) return true;
