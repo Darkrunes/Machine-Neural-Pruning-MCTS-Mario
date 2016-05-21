@@ -9,6 +9,8 @@ public class Graph {
 	private Point currPos;
 	private Point exploredLowBound;
 	private Point exploredHighBound;
+	private Stack<Point> exploreStack;
+	private HashMap<String, Point> visitedPoints;
 	
 	public Graph() {
 		map = new Tile[160][160];
@@ -27,6 +29,8 @@ public class Graph {
 		}
 		// Set the starting position so we can backtrack later to it
 		map[currPos.y][currPos.x] = Tile.StartPosition;
+		exploreStack = new Stack<Point>();
+		visitedPoints = new HashMap<String, Point>();
 		
 	}
 	
@@ -36,7 +40,6 @@ public class Graph {
 	 * @param initialView 5 x 5 view at the start
 	 */
 	public void initialiseMap(char[][] initialView) {
-		// Lower bound of map explored initially
 		Point mapPos = new Point(78, 78);
 		for (int y = 4; y >= 0; y--) {
 			mapPos.x = 78;
@@ -56,6 +59,8 @@ public class Graph {
 			}
 			mapPos.y += 1;
 		}
+		// Update points that haven't been visited
+		floodFill();
 		// Update region explored
 		exploredLowBound = new Point(78, 78);
 		exploredHighBound = new Point(82, 82);
@@ -104,14 +109,13 @@ public class Graph {
 	/**
 	 * Get a point within the current boundaries that the agent has gone to which has been unexplored
 	 */
-	
 	public Point getUnexplored() {
 		ArrayList<Point> unexploredList = new ArrayList<Point>();
 		// Scan the map the agent knows of so far for unexplored points
 		for (int y = exploredHighBound.y; y >= exploredLowBound.y; y--) {
 			for (int x = exploredLowBound.x; x <= exploredHighBound.x; x++) {
 				// If a point hasn't been explored, add the point to the unexplored list
-				if (map[y][x].charVal == '?') {
+				if (map[y][x] == Tile.Unexplored) {
 					Point unexploredPoint = new Point(x, y);
 					unexploredList.add(unexploredPoint);
 				}
@@ -119,7 +123,7 @@ public class Graph {
 		}
 		// Randomly select one of the unexplored points and tell the agent to explore up to that point
 		Random rand = new Random();
-		if (unexploredList.size() == 0) return null; 
+		if (unexploredList.isEmpty()) return null; 
 		int randomIndex = rand.nextInt(unexploredList.size()); 
 		return unexploredList.get(randomIndex);
 	}
@@ -235,6 +239,11 @@ public class Graph {
 		if (map[currPos.y][currPos.x] == Tile.Door || map[currPos.y][currPos.x] == Tile.Tree) {
 			map[currPos.y][currPos.x] = Tile.Empty;
 		}
+		// Update points that haven't been visited yet
+		floodFill();
+		// Add the current point to the visited set
+		String key = String.valueOf(currPos.x).concat(String.valueOf(currPos.y));
+		visitedPoints.put(key, currPos);
 	}
 	
 	public void removeItemOnMap(Point pos) {
@@ -285,6 +294,83 @@ public class Graph {
 		return (playerInv.contains(item)) ? true : false;
 	}
 	
+	
+	// Start of code for flood fill
+	
+	/**
+	 * Pops a point from the exploreStack and returns it
+	 * @return Popped point from the exploreStack
+	 */
+	public Point getUnvisitedPoint() {
+		System.out.println("Queue size: " + exploreStack.size());
+		if (exploreStack.size() == 0) return null; 
+		return exploreStack.pop();
+	}
+	
+	/**
+	 * Determines if a point has already been visited by the agent or is currently in the exploreStack
+	 * @param currPos Current position of the player
+	 * @return if the point has been visited or is in the explore Stack
+	 */
+	public boolean pointVisited(Point currPos) {
+		String key = String.valueOf(currPos.x).concat(String.valueOf(currPos.y));
+		if (visitedPoints.containsKey(key)) return true;
+		for (Point currPoint: exploreStack) {
+			if (currPoint.x == currPos.x && currPoint.y == currPos.y) return true;
+		}		
+		return false;
+	}
+	
+	/**
+	 * From the player's current position, add tiles adjacent to the player to the exploreStack that are reachable
+	 * excluding diagonal tiles (We would have to perform A star to see if its reachable since it could be behind an
+	 * obstacle. This allows the agent to search in a way similar to DFS which is very useful for maps with
+	 * dense in the number of obstacles.
+	 */
+	private void floodFill() {
+		if (!pointVisited(currPos)) {
+			// Left Tile
+			if (!Tile.isObstacle(map[currPos.y][currPos.x-1])) {
+				if (!pointVisited(new Point(currPos.x-1, currPos.y))) 
+					exploreStack.push(new Point(currPos.x-1, currPos.y));
+			}
+			// Right Tile
+			if (!Tile.isObstacle(map[currPos.y][currPos.x+1])) {
+				if (!pointVisited(new Point(currPos.x+1, currPos.y))) 
+					exploreStack.push(new Point(currPos.x+1, currPos.y));
+			}
+			// Top Tile
+			if (!Tile.isObstacle(map[currPos.y+1][currPos.x])) {
+				if (!pointVisited(new Point(currPos.x, currPos.y+1))) 
+					exploreStack.push(new Point(currPos.x, currPos.y+1));
+			}
+			// Right Tile
+			if (!Tile.isObstacle(map[currPos.y-1][currPos.x])) {
+				if (!pointVisited(new Point(currPos.x, currPos.y-1))) 
+					exploreStack.push(new Point(currPos.x, currPos.y-1));
+			}
+		}
+		/*
+		// Likes to cut down lots of trees
+		if (!pointVisited(currPos)) {
+			if (canPassTile(new Point(currPos.x-1, currPos.y), false, playerInv, false)) {
+				if (!pointVisited(new Point(currPos.x-1, currPos.y))) exploreStack.push(new Point(currPos.x-1, currPos.y));
+			}
+			if (canPassTile(new Point(currPos.x+1, currPos.y), false, playerInv, false)) {
+				if (!pointVisited(new Point(currPos.x+1, currPos.y))) exploreStack.push(new Point(currPos.x+1, currPos.y));
+			}
+			if (canPassTile(new Point(currPos.x, currPos.y+1), false, playerInv, false)) {
+				if (!pointVisited(new Point(currPos.x, currPos.y+1))) exploreStack.push(new Point(currPos.x, currPos.y+1));
+			}
+			if (canPassTile(new Point(currPos.x, currPos.y-1), false, playerInv, false)) {
+				if (!pointVisited(new Point(currPos.x, currPos.y-1))) exploreStack.push(new Point(currPos.x, currPos.y-1));
+			}
+		}
+		*/
+	}
+	
+	// End of code for flood fill
+	
 	/**
 	 * Given the starting direction and a behavior which determines the goal and heuristic, 
 	 * this will return a queue of moves to the goal or null if none is present.
@@ -306,8 +392,8 @@ public class Graph {
 		boolean canUseStone = currBehaviour.canUseStone();
 		pq.add(currState);
 		// Check that the point to reach is not out of bounds
-		if (goal.x > 160 || goal.x < 0) return null;
-		if (goal.y > 160 || goal.y < 0) return null;
+		if (goal.x >= 160 || goal.x < 0) return null;
+		if (goal.y >= 160 || goal.y < 0) return null;
 		
 		// Used to identify if a behaviour is the GetGold behaviour
 		// If it is GetGold, then the search cannot freely pass unexplored tiles
@@ -315,6 +401,7 @@ public class Graph {
 		// as empty tiles which could lead to agent to not get the gold if that tile is something
 		// it cannot bypass such as water
 		boolean getGold = false;
+		System.out.printf("Goal at (%d, %d)\n", goal.x, goal.y);
 		if (map[goal.y][goal.x] == Tile.Gold || Tile.isItem(map[goal.y][goal.x])) getGold = true;
 		
 		while (true) {
@@ -333,7 +420,7 @@ public class Graph {
 			currDirection = currState.getDirection();
 			if(currentNode.equals(goal)) break;
 			// If agent is out of bounds of the map, discard state
-			if (currentNode.x > 160 || currentNode.y > 160) continue;
+			if (currentNode.x >= 160 || currentNode.y >= 160) continue;
 			if (currentNode.x < 0 || currentNode.y < 0) continue;
 			
 			// Tile above
@@ -394,6 +481,7 @@ public class Graph {
 	 * Determines if a state will be added to the pq or not depending on a variety of factors 
 	 */
 	private boolean addStateToQueue(Point tempPoint, boolean canUseStone, ArrayList<Tile> tempInv, boolean getGold) {
+		if (tempPoint.x >= 160 || tempPoint.y >= 160) return false;
 		if (canPassTile(tempPoint, canUseStone, tempInv, getGold)) {
 			if (map[tempPoint.y][tempPoint.x] != Tile.Water) {
 				return true;
@@ -500,6 +588,17 @@ public class Graph {
 	
 	public Tile getTileAt(int x, int y) {
 		return map[y][x];
+	}
+	
+	public Point getLocationTile(Tile tile) {
+		for (int y = exploredHighBound.y; y >= exploredLowBound.y; y--) {
+			for (int x = exploredLowBound.x; x <= exploredHighBound.x; x++) {
+				if (x == currPos.x && y == currPos.y) {
+					if (map[y][x] == tile) return new Point(x, y);
+				}
+			}
+		}
+		return null;
 	}
 	
 	public Move getRandomMove() {
