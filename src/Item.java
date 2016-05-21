@@ -1,38 +1,49 @@
 import java.awt.Point;
 
+/**
+ * Stores information about an item's name (Corresponding tile), location and priority weight
+ * @author Saffat Shams Akanda, Richard Luong
+ *
+ */
 public class Item {
 	private Tile itemName;
 	private int priorityWeight;
 	private Point pos;
 	
+	/**
+	 * Constructor for Item
+	 * @param itemName 			Name of the item
+	 * @param priorityWeight	Value given to the item to determine how urgently the agent requires it
+	 * @param pos				Coordinates of the item if it is on the map
+	 */
 	public Item(Tile itemName, int priorityWeight, Point pos) {
 		this.itemName = itemName;
 		this.priorityWeight = priorityWeight;
 		this.pos = pos;
 	}
 
+	/**
+	 * Getter method returns the name of the item
+	 * @return Name of the item
+	 */
 	public Tile getItemName() {
 		return itemName;
 	}
 
-	public void setItemName(Tile itemName) {
-		this.itemName = itemName;
-	}
-
+	/**
+	 * Getter method returns the priority weight of the item
+	 * @return Priority weight of the item
+	 */
 	public int getPriorityWeight() {
 		return priorityWeight;
 	}
 
-	public void setPriorityWeight(int priorityWeight) {
-		this.priorityWeight = priorityWeight;
-	}
-
+	/**
+	 * Getter method returns the position of the itme
+	 * @return X and Y coordinates of the item
+	 */
 	public Point getPos() {
 		return pos;
-	}
-
-	public void setPos(Point pos) {
-		this.pos = pos;
 	}
 
 	@Override
